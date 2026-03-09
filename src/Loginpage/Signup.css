@@ -1,0 +1,132 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+.login-contaner40 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100vh;
+    width: 100%;
+
+}
+
+.alltext40 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+    width: 500px;
+
+
+}
+
+.box-left40 {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-right40 {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-box40 {
+    width: 400px;
+    height: 300px;
+}
+
+.headertype40 {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 25px;
+    margin-top: 10%;
+}
+
+.headertype40 h4 {
+    color: #555;
+    font-size: 20px;
+}
+
+.logcss40 {
+    font-family: sans-serif;
+    background-color: #FFFFFF1A;
+    border-radius: 15px;
+    padding: 24px;
+    box-shadow: 1px 1px 5px 5px #f4eeee;
+
+}
+
+.buttons40 {
+    margin: 5px;
+}
+
+
+
+
+.buttons40 button {
+
+    font-size: x-large;
+    width: 100%;
+    height: 50px;
+    margin: 8px 0;
+    padding: 8px;
+    background-color: #000000;
+    color: white;
+    border: 0px;
+    border-radius: 15px;
+    transition: 0.3s;
+}
+
+.buttons40 button:disabled {
+    pointer-events: none;
+    opacity: 0.60;
+}
+
+
+.Signup40 {
+    margin: 10px;
+}
+
+.Signup40 {
+    color: #0a0808;
+    text-decoration: underline;
+    margin: 5px;
+}
+
+@media(max-width: 768px) {
+    .login-contaner40 {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .alltext40 {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .image-box40 {
+        width: 100%;
+        height: auto;
+    }
+
+    .headertype40 {
+        margin-top: 20px;
+        font-size: 18px;
+        margin-bottom: 200px;
+    }
+}

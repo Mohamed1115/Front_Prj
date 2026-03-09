@@ -1,0 +1,650 @@
+/* ============================================
+   COURSE PAGE
+   ============================================ */
+
+.course-page {
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    min-height: 100vh;
+}
+
+/* --- Hero Banner --- */
+.course-hero {
+    margin: 20px 5% 0;
+    height: 350px;
+    background: #e5e7eb;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.course-hero-overlay {
+    background: rgba(0, 0, 0, 0.05); /* very light overlay if needed for placeholder */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    color: #ffffff; /* text is white on the gray placeholder in wireframe */
+}
+
+.hero-created-by {
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+
+.hero-instructor-badge {
+    background: #1a1a1a;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.hero-title {
+    font-size: 2rem;
+    font-weight: 800;
+    white-space: pre-line;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    max-width: 800px;
+}
+
+.hero-subtitle {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 24px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.hero-add-to-cart {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.hero-price {
+    font-size: 1.1rem;
+}
+
+.hero-old-price {
+    color: #9ca3af;
+    text-decoration: line-through;
+    font-size: 0.9rem;
+}
+
+.hero-heart-btn {
+    width: 46px;
+    height: 46px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+}
+
+.hero-buy-btn {
+    background: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 40px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-width: 200px;
+}
+
+/* --- Tabs Navigation --- */
+.course-tabs {
+    margin: 20px 5%;
+    display: flex;
+    background: #c8c9ca;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.course-tab {
+    flex: 1;
+    padding: 14px 0;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.course-tab.active {
+    background: #000000;
+    color: #ffffff;
+    border-radius: 12px;
+}
+
+/* --- Main Layout --- */
+.course-body {
+    margin: 30px 5%;
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.course-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.course-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+}
+
+/* Shared Section Heading */
+.section-heading {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+}
+
+/* --- What you'll learn --- */
+.learn-section {
+    background: #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.learn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+}
+
+.learn-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #333;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.learn-check {
+    color: #1a1a1a;
+    font-size: 18px !important;
+    margin-top: 2px;
+}
+
+.show-more-btn {
+    margin-top: 16px;
+    background: none;
+    border: none;
+    color: #1a1a1a;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* --- Course Content --- */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 20px;
+}
+
+.content-meta {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.expand-all-btn {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.accordion-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.accordion-item {
+    border-bottom: 1px solid #e5e7eb;
+}
+.accordion-item:last-child {
+    border-bottom: none;
+}
+
+.accordion-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.accordion-body {
+    background: #e5e7eb;
+    padding: 12px 20px;
+}
+
+.lesson-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 0.85rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.lesson-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lesson-icon {
+    font-size: 18px !important;
+    color: #6b7280;
+}
+
+.lesson-duration {
+    color: #6b7280;
+}
+
+/* --- Facility & Instructor Cards --- */
+.facility-info-card, .instructor-card {
+    background: #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+}
+
+.fic-left, .inst-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.fic-label, .inst-heading {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+}
+
+.fic-desc, .inst-bio {
+    font-size: 0.85rem;
+    color: #333;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.fic-stats, .inst-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.fic-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.fic-right, .inst-left {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+}
+
+.fic-logo-box, .inst-avatar {
+    width: 140px;
+    height: 140px;
+    background: #1a1a1a;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.fic-name, .inst-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+}
+
+.fic-tagline, .inst-title {
+    font-size: 0.75rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+/* --- FAQ --- */
+.faq-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.see-more-link {
+    font-size: 0.85rem;
+    color: #2563eb;
+    font-weight: 600;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.faq-item {
+    background: #000000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.faq-question {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: transparent;
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: left;
+}
+
+.faq-answer {
+    padding: 0 16px 16px;
+    color: #d1d5db;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* --- Reviews --- */
+.review-underline {
+    width: 40px;
+    height: 3px;
+    background: #1a1a1a;
+    margin-top: -15px;
+    margin-bottom: 20px;
+}
+
+.review-prompt {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+}
+
+.review-input-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 16px;
+}
+
+.star-rating-input {
+    display: flex;
+    gap: 4px;
+}
+
+.send-review-btn {
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 24px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.review-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.review-avatar {
+    font-size: 40px !important;
+    color: #9ca3af;
+}
+
+.review-content {
+    flex: 1;
+}
+
+.review-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+}
+
+.review-rating {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.review-text {
+    font-size: 0.8rem;
+    color: #4b5563;
+    line-height: 1.4;
+}
+
+/* --- Sidebar (Includes) --- */
+.sidebar-card {
+    background: #4b5563;
+    border-radius: 16px;
+    padding: 24px;
+    color: #ffffff;
+}
+
+.sidebar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.sidebar-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.sidebar-feature {
+    background: #e5e7eb;
+    color: #1a1a1a;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+}
+
+.sf-icon {
+    font-size: 24px;
+}
+
+.sf-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+/* --- Footer --- */
+.course-footer {
+    margin-top: 60px;
+    background: #000000;
+    padding: 40px 5%;
+    text-align: center;
+}
+
+.course-footer .footer-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 16px;
+}
+
+.course-footer .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 16px;
+}
+
+.course-footer .footer-link {
+    font-size: 0.82rem;
+    color: #9ca3af;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.course-footer .footer-link:hover {
+    color: #fff;
+}
+
+.course-footer .footer-social {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.course-footer .social-icon {
+    color: #9ca3af;
+    transition: color 0.2s;
+    cursor: pointer;
+}
+
+.course-footer .social-icon:hover {
+    color: #fff;
+}
+
+.course-footer .footer-copyright {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+    .course-body {
+        flex-direction: column;
+    }
+    .course-sidebar {
+        width: 100%;
+        order: -1;
+    }
+    .learn-grid {
+        grid-template-columns: 1fr;
+    }
+    .facility-info-card, .instructor-card {
+        flex-direction: column-reverse;
+    }
+    .fic-right, .inst-left {
+        width: 100%;
+        flex-direction: row;
+        gap: 20px;
+        text-align: left;
+    }
+    .fic-logo-box, .inst-avatar {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 0;
+    }
+    .hero-title {
+        font-size: 1.5rem;
+    }
+}

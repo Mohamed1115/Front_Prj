@@ -1,0 +1,272 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+.login-contaner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100vh;
+    width: 100%;
+
+}
+
+.alltext {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+    width: 500px;
+
+
+}
+
+.box-left {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-box {
+    width: 400px;
+    height: 300px;
+}
+
+.headertype {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 25px;
+    margin-top: 10%;
+}
+
+.headertype h4 {
+    color: #555;
+    font-size: 20px;
+}
+
+.logcss {
+    font-family: sans-serif;
+    background-color: #FFFFFF1A;
+    border-radius: 15px;
+    padding: 24px;
+    box-shadow: 1px 1px 5px 5px #f4eeee;
+    width: 100%;
+}
+
+.buttons {
+    margin: 5px;
+}
+
+.remember {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 8px;
+    border: none;
+}
+
+
+.buttons button {
+
+    font-size: x-large;
+    width: 100%;
+    height: 50px;
+    margin: 8px 0;
+    padding: 8px;
+    background-color: #000000;
+    color: white;
+    border: 0px;
+    border-radius: 15px;
+    transition: 0.3s;
+}
+
+.buttons button:disabled {
+    pointer-events: none;
+    opacity: 0.60;
+}
+
+.mylink {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+
+.Links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.Links {
+    font-size: 14px;
+    color: #0a0808;
+    text-decoration: underline;
+}
+
+.remember input {
+    display: none;
+
+}
+
+.remember label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.checkbox {
+    display: flex;
+    justify-content: flex-start;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    margin-right: 8px;
+    position: relative;
+}
+
+.remember input:checked+label .checkbox {
+    background-color: #4caf50;
+    border-color: #4caf50;
+}
+
+.remember input:checked+label .checkbox::after {
+    content: "✔";
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+.foot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.google {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1877f2;
+    box-sizing: border-box;
+
+    transition: all 0.3s ease;
+}
+
+.google:hover {
+    background-color: #1fcd4a;
+    color: white;
+    border-color: #1877f2;
+
+    transform: scale(1.1);
+}
+
+.facebook {
+    width: 44px;
+    height: 44px;
+
+    border-radius: 50%;
+    border: 1px solid #ddd;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #1877f2;
+    box-sizing: border-box;
+
+    transition: all 0.3s ease;
+}
+
+.facebook:hover {
+    background-color: #1877f2;
+    color: white;
+    border-color: #1fcd4a;
+
+    transform: scale(1.1);
+}
+
+.Signup1 {
+    margin: 10px;
+}
+
+.Signup {
+    color: #0a0808;
+    text-decoration: underline;
+    margin: 5px;
+}
+
+hr {
+    font-size: 12px;
+    border: none;
+    border-top: 2px solid #c5bebe;
+    color: #c5bebe;
+    overflow: visible;
+    text-align: center;
+    height: 20px;
+    margin: 20px;
+}
+
+hr::after {
+
+    background: rgb(255, 255, 255);
+    content: "or Login with";
+    padding: 0 40px;
+    position: relative;
+    top: -12px;
+}
+
+@media(max-width: 768px) {
+    .login-contaner {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .alltext {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .image-box {
+        width: 100%;
+        height: auto;
+    }
+
+    .headertype {
+        margin-top: 20px;
+        margin-bottom: 200px;
+    }
+
+}
