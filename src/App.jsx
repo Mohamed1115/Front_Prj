@@ -13,10 +13,20 @@ import Navbar from "./viewpages/Navbar";
 import HomePage from "./viewpages/HomePage";
 import FacilityProfile from "./viewpages/FacilityProfile";
 import CoursePage from "./viewpages/CoursePage";
+import CheckoutPage from "./viewpages/CheckoutPage";
+import ProfilePage from "./viewpages/ProfilePage";
+import WatchCoursePage from "./viewpages/WatchCoursePage";
+import CreateCoursePage from "./viewpages/CreateCoursePage";
+import CreateFacilityPage from "./viewpages/CreateFacilityPage";
+import AllCoursesPage from "./viewpages/AllCoursesPage";
+import MyCoursesPage from "./viewpages/MyCoursesPage";
+
+import ChatBot from "./viewpages/ChatBot";
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route path="/OTP" element={<OTP />} />
       <Route path="/" element={<Login />} />
       <Route path="/Forgetpassword" element={<Forgetpassword />} />
@@ -41,6 +51,36 @@ export default function App() {
         element={<><Navbar /><Pages1 /></>}
       />
       <Route path="/Favoritepage" element={<><Navbar /><Favoritepage /></>} />
+      <Route
+        path="/checkout"
+        element={<><Navbar /><CheckoutPage /></>}
+      />
+      <Route
+        path="/profile"
+        element={<><Navbar /><ProfilePage /></>}
+      />
+      <Route
+        path="/watch/:courseId"
+        element={<><Navbar /><WatchCoursePage /></>}
+      />
+      <Route
+        path="/create-course"
+        element={<><Navbar /><CreateCoursePage /></>}
+      />
+      <Route
+        path="/create-facility"
+        element={<><Navbar /><CreateFacilityPage /></>}
+      />
+      <Route
+        path="/courses"
+        element={<><Navbar /><AllCoursesPage /></>}
+      />
+      <Route
+        path="/my-courses"
+        element={<><Navbar /><MyCoursesPage /></>}
+      />
     </Routes>
+    <ChatBot />
+    </>
   )
 }

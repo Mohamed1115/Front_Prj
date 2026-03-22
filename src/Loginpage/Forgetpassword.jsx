@@ -1,13 +1,10 @@
-import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
-import TextField from '@mui/material/TextField';
-import "./Forgetpasswordcss.css";
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { forgotPassword } from '../services/Api';
+import "./Logincss.css";
 
 export default function Forgetpassword() {
-    const Navigate = useNavigate();
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     
@@ -34,11 +31,10 @@ export default function Forgetpassword() {
         setIsLoading(true);
         
         try {
-            const data = await forgotPassword(trimmedEmail);
+            await forgotPassword(trimmedEmail);
             alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني");
-            // خزّن الإيميل علشان صفحة OTP تعرف تبعت VerifyOTP
             localStorage.setItem("reset_email", trimmedEmail);
-            Navigate("/OTP", { state: { email: trimmedEmail } });
+            navigate("/OTP", { state: { email: trimmedEmail } });
         } catch (error) {
             console.error("Forgot password error:", error);
             alert(error.message || "حدث خطأ أثناء إرسال الطلب");
@@ -46,55 +42,44 @@ export default function Forgetpassword() {
             setIsLoading(false);
         }
     }
-   
 
     return (   
-        <> 
-         <div className='allcontaner20'>    
-           <div className='headertype20'>
-                <h3>
-                    LOGO
-                </h3>
-                <h1>Welcome TO ZUMRA! </h1>
-                <h4>Please Reset your password</h4>
+        <div className="login-wrapper">
+            <div className="login-card">
+                <div className="login-header">
+                    <div className="logo">
+                        <span className="logo-icon"></span>
+                        <span className="logo-text">ZUMRA</span>
+                    </div>
+                    <h1>Forgot Password</h1>
+                    <p>Enter the email associated with your account</p>
                 </div>
-           <div className='contaner20'>
-                
-                <div className='box-left20'>
-                    <form className='alltext20' onSubmit={handleForgotPassword}>
-                
-            
 
-                <div className='logcss20'>
-        
-                            <div className="buttons20">
-                <div className='header20'><p>   Enter the email to reset your password. </p></div>    
-             <TextField  fullWidth  label="Email" variant="outlined"sx={{marginBottom:"15px"}} type='email' value={email} onChange={(e)=>setEmail(e.target.value)}/>
-                  
-                     
-                    
-             
-                    <button type='submit' disabled={!email.trim() || isLoading}>
-                        {isLoading ? "جاري الإرسال..." : "Send OTP"}
+                <form onSubmit={handleForgotPassword} className="login-form">
+                    <div className="input-group">
+                        <label>Email Address</label>
+                        <input 
+                            type="email" 
+                            placeholder="Your Email Address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        className="sign-in-btn" 
+                        disabled={!email.trim() || isLoading}
+                        style={{ marginTop: '1rem' }}
+                    >
+                        {isLoading ? "Sending OTP..." : "Send OTP"}
                     </button>
-                
-            </div>
-                            
-                        </div>
-                         <div className='Signup20'>
-                                Don't have an account?
-                            <Link to="/Signup" className='Signup20' >
-                                signup  
-                            </Link></div>
-                        </form></div>
                     
-            <div className='image-right20'>
-           <div className='image-box20'>
-                     <InsertPhotoIcon sx={{fontSize:"280px",margin:"30%"}} />
-              </div>
-                </div>
-                </div>
-                </div>
-        </>
-    )
+                    <div className="sign-up-prompt">
+                        Remember your password? <Link to="/">Log in</Link>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 }

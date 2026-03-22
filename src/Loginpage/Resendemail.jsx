@@ -1,12 +1,10 @@
-import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
-import TextField from '@mui/material/TextField';
-import "./Resendemail.css";
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { resendConfirmEmail } from '../services/Api';
+import "./Logincss.css";
 
 export default function Resendemail() {
-    const Navigate = useNavigate();
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
@@ -33,59 +31,51 @@ export default function Resendemail() {
         try {
             await resendConfirmEmail(trimmedEmail);
             alert("تم إرسال بريد تأكيد جديد إلى بريدك الإلكتروني");
-            Navigate("/");
+            navigate("/");
         } catch (error) {
             alert(error.message || "حدث خطأ أثناء إرسال البريد");
         } finally {
             setIsLoading(false);
         }
     }
-   
 
-    return (   
-        <> 
-         <div className='contaner2'>    
-           <div className='headertype10'>
-                <h3>
-                    LOGO
-                </h3>
-                <h1>Welcome TO ZUMRA! </h1>
-                <h4>Please Reset your password</h4>
+    return (
+        <div className="login-wrapper">
+            <div className="login-card">
+                <div className="login-header">
+                    <div className="logo">
+                        <span className="logo-icon"></span>
+                        <span className="logo-text">ZUMRA</span>
+                    </div>
+                    <h1>Resend Confirmation</h1>
+                    <p>Enter your email to receive a new confirmation link</p>
                 </div>
-           <div className='login-contaner0'>
-                
-                <div className='box-left10'>
-                    <form className='alltext10' onSubmit={handleResend}>
-                <div className='logcss10'>
-        
-                            <div className="buttons10">
-                <div className='header10'><p> Send email confirmation </p></div>    
-             <TextField  fullWidth  label="Email" variant="outlined"sx={{marginBottom:"15px"}} type='email' value={email} onChange={(e)=>setEmail(e.target.value)}/>
-                  
-                     
-                    
-            
-                    <button type='submit' disabled={!email.trim() || isLoading}>
-                        {isLoading ? "جاري الإرسال..." : "Send"}
+
+                <form onSubmit={handleResend} className="login-form">
+                    <div className="input-group">
+                        <label>Email Address</label>
+                        <input 
+                            type="email" 
+                            placeholder="Your Email Address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        className="sign-in-btn" 
+                        disabled={!email.trim() || isLoading}
+                        style={{ marginTop: '1rem' }}
+                    >
+                        {isLoading ? "Sending..." : "Send Email"}
                     </button>
-                
-            </div>
-                            
-                        </div>
-                         <div className='Signup10'>
-                                Don't have an account?
-                            <Link to="/Signup" className='Signup10' >
-                                signup  
-                            </Link></div>
-                        </form></div>
                     
-            <div className='image-right10'>
-           <div className='image-box10'>
-                     <InsertPhotoIcon sx={{fontSize:"280px",margin:"40%"}} />
-              </div>
-                </div>
-                </div>
-                </div>
-        </>
-    )
+                    <div className="sign-up-prompt">
+                        Back to <Link to="/">Login</Link>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 }

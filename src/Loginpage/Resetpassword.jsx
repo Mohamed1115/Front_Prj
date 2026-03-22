@@ -1,16 +1,20 @@
-import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
-import TextField from '@mui/material/TextField';
-import "./Resetpassword.css";
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { resetPassword as resetPasswordApi } from '../services/Api';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import "./Logincss.css";
+
 export default function Resetpassword() {
-     const [password, setPassword] = useState("");
+    const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const email = (localStorage.getItem("reset_email") || "").trim();
       
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
     async function handleReset(e) {
         e.preventDefault();
         if (!email) {
@@ -18,7 +22,7 @@ export default function Resetpassword() {
             return;
         }
         if (!confirmPassword.trim() || !password.trim()) {
-            alert("الرجاء ملء جميع الحقول")
+            alert("الرجاء ملء جميع الحقول");
             return;
         }
         if (password.trim().length < 6) {
@@ -38,7 +42,6 @@ export default function Resetpassword() {
                 confirmPassword: confirmPassword.trim(),
             });
             alert("تم تغيير كلمة المرور بنجاح");
-            // تنظيف بيانات الريست
             localStorage.removeItem("reset_email");
             navigate("/");
         } catch (error) {
@@ -48,48 +51,71 @@ export default function Resetpassword() {
         }
    }
    
-    
     return (   
-        <> 
-           <div className='headertype'>
-                <h3>
-                    LOGO
-                </h3>
-                <h1>Welcome Back TO ZUMRA! </h1>
-                <h4>Please Fill The credential To Login</h4>
-                </div>
-            <div className='login-contaner'>
-                
-                <div className='box-left'>
-                    <form className='alltext' onSubmit={handleReset}>
-                
-            
-
-                <div className='logcss'>
-        
-                            <div className="buttons">
-                                
-                     <TextField fullWidth type="password" value={password} onChange={(e)=>setPassword(e.target.value)} sx={{marginBottom:"15px"}} label="password" variant="outlined"  />
-                    <TextField fullWidth type="password" value={confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)}  label="confirmpassword" variant="outlined"  />
-                                    <button type='submit' disabled={isLoading || !confirmPassword.trim() || !password.trim()}>
-                                      {isLoading ? "جاري الحفظ..." : "Resetpassword"}
-                                    </button>
- 
+        <div className="login-wrapper">
+            <div className="login-card">
+                <div className="login-header">
+                    <div className="logo">
+                        <span className="logo-icon"></span>
+                        <span className="logo-text">ZUMRA</span>
                     </div>
-                                        
-                            <div className='Signup1'>
-                                Don't have an account?
-                            <Link to="/Signup" className='Signup' >
-                                signup  
-                            </Link></div>
+                    <h1>Reset Password</h1>
+                    <p>Enter your new password below</p>
                 </div>
-            </form></div>
-            <div className='image-right'>
-           <div className='image-box'>
-                     <InsertPhotoIcon sx={{fontSize:"290px"}} />
-              </div>
-                </div>
-                </div>
-        </>
-    )
+
+                <form onSubmit={handleReset} className="login-form">
+                    <div className="input-group">
+                        <label>New Password</label>
+                        <div className="password-input-wrapper">
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <button 
+                                type="button" 
+                                className="toggle-password" 
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="input-group">
+                        <label>Confirm Password</label>
+                        <div className="password-input-wrapper">
+                            <input 
+                                type={showConfirmPassword ? "text" : "password"} 
+                                placeholder="••••••••"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                            />
+                            <button 
+                                type="button" 
+                                className="toggle-password" 
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                                {showConfirmPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        className="sign-in-btn" 
+                        disabled={isLoading || !confirmPassword.trim() || !password.trim()}
+                        style={{ marginTop: '1rem' }}
+                    >
+                        {isLoading ? "Resetting..." : "Reset Password"}
+                    </button>
+                    
+                    <div className="sign-up-prompt">
+                        Remember your password? <Link to="/">Log in</Link>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 }

@@ -1,0 +1,186 @@
+/* ============================================
+   GLOBAL THEME SYSTEM (3 Themes)
+   Applies to: Navbar, Buttons, Dark Sections,
+   Footer, Accents, Cards, Sidebar, ChatBot
+   ============================================ */
+
+/* ═══ DEFAULT: DARK THEME ═══ */
+:root,
+[data-theme="dark"] {
+  /* Navbar */
+  --nav-bg: #1a1818;
+  --nav-text: #ffffff;
+  --nav-search-bg: #e8e8e8;
+  --nav-search-text: #333;
+  --nav-border: #444;
+  --nav-cat-border: rgba(255,255,255,0.3);
+  --nav-cat-hover: rgba(255,255,255,0.05);
+  --nav-icon-color: #ffffff;
+  --nav-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+
+  /* Buttons & Accents */
+  --accent: #1a1a1a;
+  --accent-hover: #333;
+  --accent-text: #ffffff;
+  --btn-primary-bg: #1a1a1a;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: #333;
+  --btn-outline-border: #1a1a1a;
+  --btn-outline-text: #1a1a1a;
+
+  /* Dark Sections (Facilities, Calendar, etc.) */
+  --dark-section-bg: #111111;
+  --dark-card-bg: #1e1e1e;
+  --dark-card-hover: #2a2a2a;
+
+  /* Popular Cards */
+  --pop-card-bg: #1a1a1a;
+  --pop-card-image-bg: #2a2a2a;
+
+  /* Footer */
+  --footer-bg: #111111;
+  --footer-text: #9ca3af;
+  --footer-heading: #ffffff;
+
+  /* Sidebar (Profile) */
+  --sidebar-bg: #f9fafb;
+  --sidebar-active-bg: #1a1a1a;
+  --sidebar-active-text: #ffffff;
+  --sidebar-text: #374151;
+
+  /* ChatBot FAB */
+  --chatbot-fab-bg: #1a1a1a;
+  --chatbot-fab-text: #ffffff;
+  --chatbot-header-bg: #1a1a1a;
+
+  /* Course Hero */
+  --hero-bg: #2d2d2d;
+  --hero-text: #ffffff;
+
+  /* Progress Bars */
+  --progress-fill: #1a1a1a;
+
+  /* Stepper */
+  --stepper-active: #1a1a1a;
+  --stepper-text: #ffffff;
+}
+
+/* ═══ YELLOW THEME ═══ */
+[data-theme="yellow"] {
+  /* Navbar */
+  --nav-bg: #ffd500;
+  --nav-text: #1a1a1a;
+  --nav-search-bg: rgba(255,255,255,0.5);
+  --nav-search-text: #333;
+  --nav-border: rgba(0,0,0,0.15);
+  --nav-cat-border: rgba(0,0,0,0.2);
+  --nav-cat-hover: rgba(0,0,0,0.05);
+  --nav-icon-color: #1a1a1a;
+  --nav-shadow: 0px 4px 15px rgba(255, 213, 0, 0.3);
+
+  /* Buttons & Accents */
+  --accent: #ffd500;
+  --accent-hover: #e6c000;
+  --accent-text: #1a1a1a;
+  --btn-primary-bg: #ffd500;
+  --btn-primary-text: #1a1a1a;
+  --btn-primary-hover: #e6c000;
+  --btn-outline-border: #ffd500;
+  --btn-outline-text: #1a1a1a;
+
+  /* Dark Sections */
+  --dark-section-bg: #1a1a1a;
+  --dark-card-bg: #2a2a2a;
+  --dark-card-hover: #3a3a3a;
+
+  /* Popular Cards */
+  --pop-card-bg: #1a1a1a;
+  --pop-card-image-bg: #2a2a2a;
+
+  /* Footer */
+  --footer-bg: #1a1a1a;
+  --footer-text: #9ca3af;
+  --footer-heading: #ffd500;
+
+  /* Sidebar */
+  --sidebar-bg: #f9fafb;
+  --sidebar-active-bg: #ffd500;
+  --sidebar-active-text: #1a1a1a;
+  --sidebar-text: #374151;
+
+  /* ChatBot FAB */
+  --chatbot-fab-bg: #ffd500;
+  --chatbot-fab-text: #1a1a1a;
+  --chatbot-header-bg: #ffd500;
+
+  /* Course Hero */
+  --hero-bg: #1a1a1a;
+  --hero-text: #ffffff;
+
+  /* Progress Bars */
+  --progress-fill: #ffd500;
+
+  /* Stepper */
+  --stepper-active: #ffd500;
+  --stepper-text: #1a1a1a;
+}
+
+/* ═══ BLUE THEME ═══ */
+[data-theme="blue"] {
+  /* Navbar */
+  --nav-bg: #2563eb;
+  --nav-text: #ffffff;
+  --nav-search-bg: rgba(255,255,255,0.25);
+  --nav-search-text: #fff;
+  --nav-border: rgba(255,255,255,0.2);
+  --nav-cat-border: rgba(255,255,255,0.3);
+  --nav-cat-hover: rgba(255,255,255,0.08);
+  --nav-icon-color: #ffffff;
+  --nav-shadow: 0px 4px 15px rgba(37, 99, 235, 0.3);
+
+  /* Buttons & Accents */
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-text: #ffffff;
+  --btn-primary-bg: #2563eb;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: #1d4ed8;
+  --btn-outline-border: #2563eb;
+  --btn-outline-text: #2563eb;
+
+  /* Dark Sections */
+  --dark-section-bg: #0f172a;
+  --dark-card-bg: #1e293b;
+  --dark-card-hover: #334155;
+
+  /* Popular Cards */
+  --pop-card-bg: #0f172a;
+  --pop-card-image-bg: #1e293b;
+
+  /* Footer */
+  --footer-bg: #0f172a;
+  --footer-text: #9ca3af;
+  --footer-heading: #60a5fa;
+
+  /* Sidebar */
+  --sidebar-bg: #f9fafb;
+  --sidebar-active-bg: #2563eb;
+  --sidebar-active-text: #ffffff;
+  --sidebar-text: #374151;
+
+  /* ChatBot FAB */
+  --chatbot-fab-bg: #2563eb;
+  --chatbot-fab-text: #ffffff;
+  --chatbot-header-bg: #2563eb;
+
+  /* Course Hero */
+  --hero-bg: #0f172a;
+  --hero-text: #ffffff;
+
+  /* Progress Bars */
+  --progress-fill: #2563eb;
+
+  /* Stepper */
+  --stepper-active: #2563eb;
+  --stepper-text: #ffffff;
+}

@@ -1,9 +1,9 @@
-import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
-import TextField from '@mui/material/TextField';
-import "./Signup.css";
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../services/Api';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import "./Logincss.css";
 
 export default function Signup() {
     const navigate = useNavigate();
@@ -15,13 +15,15 @@ export default function Signup() {
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    
     function validateEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
     
     function validatePhone(phone) {
-        // التحقق من رقم الهاتف (أرقام فقط، 10-15 رقم)
         const phoneRegex = /^[0-9]{10,15}$/;
         return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
     }
@@ -35,7 +37,6 @@ export default function Signup() {
         const trimmedPassword = password.trim();
         const trimmedConfirmPassword = confirmPassword.trim();
         
-        // Validation
         if (!trimmedName || !trimmedEmail || !trimmedPassword || !trimmedConfirmPassword) {
             alert("الرجاء ملء جميع الحقول المطلوبة");
             return;
@@ -69,7 +70,7 @@ export default function Signup() {
         setIsLoading(true);
         
         try {
-            const data = await register({
+            await register({
                 name: trimmedName,
                 email: trimmedEmail,
                 phoneNumber: trimmedPhone,
@@ -87,65 +88,105 @@ export default function Signup() {
             setIsLoading(false);
         }
     }
-   
     
     return (   
-        <> 
-           <div className='headertype40'>
-                <h3>
-                    LOGO
-                </h3>
-                <h1>Welcome TO ZUMRA! </h1>
-                <h4>Please Fill The credential To Signup</h4>
+        <div className="login-wrapper">
+            <div className="login-card">
+                <div className="login-header">
+                    <div className="logo">
+                        <span className="logo-icon"></span>
+                        <span className="logo-text">ZUMRA</span>
+                    </div>
+                    <h1>Create an account</h1>
+                    <p>Please enter your details to sign up</p>
                 </div>
-            <div className='login-contaner40'>
-                
-                <div className='box-left40'>
-                    <form className='alltext40' onSubmit={handleSignup}>
-                
-            
 
-                <div className='logcss40'>
-        
-                            <div className="buttons40">
-              <TextField  fullWidth  label="Full Name" variant="outlined" sx={{marginBottom:"15px"}} value={name} onChange={(e)=>setName(e.target.value)}/>
-            <TextField  fullWidth  label="Phone Number" variant="outlined" sx={{marginBottom:"15px"}} type='tel' value={phoneNumber} onChange={(e)=>setPhoneNumber(e.target.value)}/>
-             <TextField  fullWidth  label="Email" variant="outlined" sx={{marginBottom:"15px"}} type='email' value={email} onChange={(e)=>setEmail(e.target.value)}/>
-             <TextField fullWidth type="password" value={password} sx={{marginBottom:"15px"}} onChange={(e)=>setPassword(e.target.value)}  label="password" variant="outlined"  />
-               <TextField  fullWidth  label="Confirm Password" variant="outlined" sx={{marginBottom:"15px"}} type='password' value={confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)}/>
-               
-               <div style={{marginBottom:"15px", display:"flex", alignItems:"center"}}>
-                   <input 
-                       type='checkbox' 
-                       checked={acceptTerms} 
-                       onChange={(e)=>setAcceptTerms(e.target.checked)} 
-                       id='acceptTerms'
-                       style={{marginRight:"8px"}}
-                   />
-                   <label htmlFor="acceptTerms" style={{fontSize:"14px"}}>
-                       أقبل الشروط والأحكام
-                   </label>
-               </div>
+                <form onSubmit={handleSignup} className="login-form">
+                    <div className="input-group">
+                        <label>Full Name</label>
+                        <input 
+                            type="text" 
+                            placeholder="John Doe"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
+                    </div>
+                    <div className="input-group">
+                        <label>Email Address</label>
+                        <input 
+                            type="email" 
+                            placeholder="name@company.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
+                    <div className="input-group">
+                        <label>Phone Number</label>
+                        <input 
+                            type="tel" 
+                            placeholder="+1234567890"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                        />
+                    </div>
+                    <div className="input-group">
+                        <label>Password</label>
+                        <div className="password-input-wrapper">
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <button 
+                                type="button" 
+                                className="toggle-password" 
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="input-group">
+                        <label>Confirm Password</label>
+                        <div className="password-input-wrapper">
+                            <input 
+                                type={showConfirmPassword ? "text" : "password"} 
+                                placeholder="••••••••"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                            />
+                            <button 
+                                type="button" 
+                                className="toggle-password" 
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                                {showConfirmPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="form-options">
+                        <label className="remember-checkbox">
+                            <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} />
+                            <span className="checkmark"></span>
+                            I accept the terms and conditions
+                        </label>
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        className="sign-in-btn" 
+                        disabled={!email.trim() || !password.trim() || !name.trim() || !confirmPassword.trim() || !acceptTerms || isLoading}
+                    >
+                        {isLoading ? "Signing up..." : "Sign up"}
+                    </button>
                     
-           <button type='submit' disabled={!email.trim() || !password.trim() || !name.trim() || !confirmPassword.trim() || !acceptTerms || isLoading}>
-               {isLoading ? "جاري إنشاء الحساب..." : "Sign Up"}
-           </button>
+                    <div className="sign-up-prompt">
+                        Already have an account? <Link to="/">Log in</Link>
+                    </div>
+                </form>
             </div>
-                           
-                            
-                            <div className='Signup40'>
-                                Don't have an account?
-                            <Link to="/" className='Signup40' >
-                               Login
-                            </Link></div>
-                </div>
-            </form></div>
-            <div className='image-right40'>
-           <div className='image-box40'>
-                     <InsertPhotoIcon sx={{fontSize:"290px"}} />
-              </div>
-                </div>
-                </div>
-        </>
-    )
+        </div>
+    );
 }

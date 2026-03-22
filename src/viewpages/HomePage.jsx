@@ -3,194 +3,189 @@ import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
 
 // MUI Icons
-import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
-import GroupsIcon from "@mui/icons-material/Groups";
-import LandscapeIcon from "@mui/icons-material/Landscape";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import CloseIcon from "@mui/icons-material/Close";
+import LandscapeIcon from "@mui/icons-material/Landscape";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 import SchoolIcon from "@mui/icons-material/School";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import ShareIcon from "@mui/icons-material/Share";
-import SkipNextIcon from "@mui/icons-material/SkipNext";
+import GroupsIcon from "@mui/icons-material/Groups";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import XIcon from "@mui/icons-material/X";
 
 // ─── Mock Data ───────────────────────────────────────────
 const popularCourses = [
-    { id: 1, title: "Flutter Course", instructor: "Amr Ahmed", price: "$199" },
-    { id: 2, title: "Backend Course", instructor: "Amr Ahmed", price: "$199" },
-    { id: 3, title: "Frontend Course", instructor: "Amr Ahmed", price: "$199" },
-    { id: 4, title: "UI/UX Design Course", instructor: "Amr Ahmed", price: "$199" },
+    { id: 1, name: "Flutter Course", instructor: "Amr Ahmed", price: "$195" },
+    { id: 2, name: "Backend Course", instructor: "Amr Ahmed", price: "$195" },
+    { id: 3, name: "Frontend Course", instructor: "Amr Ahmed", price: "$195" },
+    { id: 4, name: "UI/UX Design Course", instructor: "Amr Ahmed", price: "$195" },
 ];
 
 const facilities = [
-    {
-        id: "zumra",
-        name: "ZUMRA",
-        description:
-            "Powerful e-learning platform serving all educational needs. Manage courses, batches, groups, and track student progress with our comprehensive LMS.",
-    },
-    {
-        id: "iti",
-        name: "ITI",
-        description:
-            "Industrial training institute providing hands-on courses. Integrated platforms for course delivery, tracking, and certification management.",
-    },
-    {
-        id: "udemy",
-        name: "Udemy",
-        description:
-            "Global marketplace for learning and instruction. Browse thousands of courses and get hands-on practice with real-world projects.",
-    },
+    { id: 1, name: "ZUMRA", subtitle: "Training Institute", desc: "A forward-looking training program designed to enhance your technical skills and industry knowledge. Offering hands-on experience with cutting-edge tools and best practice." },
+    { id: 2, name: "ITI", subtitle: "Training Institute", desc: "Institute for Training, institution providing vocational education and practical training to various levels. Preparing students for diverse employment opportunities." },
+    { id: 3, name: "Udemy", subtitle: "Online Courses", desc: "Access thousands of courses in technology, business, design, and more. Learn at your own pace with expert instructors from around the world." },
 ];
 
-const myLearningCourses = [
-    { id: 1, title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", isPlaying: true },
-    { id: 2, title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", isPlaying: false },
-    { id: 3, title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", isPlaying: false },
-    { id: 4, title: "Complete Drawing Course: Ultimate Graphic Art with Pencil", isPlaying: false },
+const learningCourses = [
+    { id: 1, title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", author: "Jane Cooper", lessons: 12 },
+    { id: 2, title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", author: "Jane Cooper", lessons: 12 },
+    { id: 3, title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", author: "Jane Cooper", lessons: 12 },
+    { id: 4, title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", author: "Jane Cooper", lessons: 12 },
 ];
 
-// ─── Component ───────────────────────────────────────────
+const upcomingEvents = [
+    { date: "Feb, Jan 24", course: "Drawing Course", time: "" },
+    { date: "Jan, Jul 25", course: "Drawing Course", time: "" },
+    { date: "Mon, Jul 26", course: "Drawing Course", time: "" },
+    { date: "Tue, Jul 26", course: "Drawing Course", time: "" },
+    { date: "Tue, Jan 28", course: "Python Course", time: "" },
+];
+
 export default function HomePage() {
     const navigate = useNavigate();
 
     return (
-        <div className="home-page">
-            {/* ═══ Welcome Section ═══ */}
-            <section className="welcome-section">
-                <p className="welcome-greeting">
-                    Welcome back, <span>Amr</span>
-                </p>
-                <div className="stats-cards">
-                    <div className="stat-card">
-                        <div className="stat-icon streak">
+        <div className="home-dashboard">
+            
+            {/* ═══ 1. Welcome Section ═══ */}
+            <section className="home-section welcome-section">
+                <h2 className="home-welcome-title">Welcome back, Amr!</h2>
+                <div className="welcome-stat-badges">
+                    <div className="stat-badge">
+                        <div className="stat-badge-icon">
                             <LocalFireDepartmentIcon />
                         </div>
-                        <div className="stat-info">
-                            <span className="stat-label">Current Streak</span>
-                            <span className="stat-value">🔥 7 Days</span>
+                        <div className="stat-badge-info">
+                            <span className="stat-badge-label">Current Streak</span>
+                            <span className="stat-badge-value">🔥🔥</span>
                         </div>
                     </div>
-                    <div className="stat-card">
-                        <div className="stat-icon lessons">
-                            <MenuBookIcon />
-                        </div>
-                        <div className="stat-info">
-                            <span className="stat-label">Lessons completed</span>
-                            <span className="stat-value">80 · 150 Min spent</span>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon groups">
-                            <GroupsIcon />
-                        </div>
-                        <div className="stat-info">
-                            <span className="stat-label">Group classes</span>
-                            <span className="stat-value">12 Active</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ═══ Most Popular ═══ */}
-            <div className="section-header">
-                <h2 className="section-title">Most Popular</h2>
-                <button className="see-all-btn">See all →</button>
-            </div>
-            <div className="courses-scroll-container">
-                <div className="courses-row">
-                    {popularCourses.map((course) => (
-                        <div className="course-card" key={course.id} onClick={() => navigate(`/course/${course.id}`)}>
-                            <div className="course-card-image">
-                                <LandscapeIcon />
-                            </div>
-                            <div className="course-card-body">
-                                <h3 className="course-card-title">{course.title}</h3>
-                                <p className="course-card-instructor">👤 {course.instructor}</p>
-                                <span className="course-card-price">{course.price}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* ═══ Facilities ═══ */}
-            <div className="section-header">
-                <h2 className="section-title">Facilities</h2>
-            </div>
-            <div className="facilities-grid">
-                {facilities.map((facility) => (
-                    <div className="facility-card" key={facility.id} onClick={() => navigate(`/facility/${facility.id}`)}>
-                        <div className="facility-icon">
+                    <div className="stat-badge">
+                        <div className="stat-badge-icon">
                             <SchoolIcon />
                         </div>
-                        <h3 className="facility-name">{facility.name}</h3>
-                        <p className="facility-description">{facility.description}</p>
+                        <div className="stat-badge-info">
+                            <span className="stat-badge-value"><strong>80</strong> Lessons completed</span>
+                            <span className="stat-badge-value"><strong>150</strong> Minutes spent</span>
+                        </div>
                     </div>
-                ))}
-            </div>
+                    <div className="stat-badge">
+                        <div className="stat-badge-icon">
+                            <GroupsIcon />
+                        </div>
+                        <div className="stat-badge-info">
+                            <span className="stat-badge-label">Group classes</span>
+                            <span className="stat-badge-value">🏆</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-            {/* ═══ My Learning ═══ */}
-            <div className="section-header">
-                <h2 className="section-title">My Learning</h2>
-                <button className="see-all-btn">See all →</button>
-            </div>
-            <div className="learning-scroll-container">
-                <div className="learning-row">
-                    {myLearningCourses.map((course) => (
-                        <div className="learning-card" key={course.id} onClick={() => navigate(`/course/${course.id}`)}>
-                            <div className="learning-card-image">
-                                <LandscapeIcon style={{ color: "#4b5563", fontSize: 40 }} />
-                                <div className="play-overlay">
+            {/* ═══ 2. Most Popular ═══ */}
+            <section className="home-section popular-section">
+                <div className="section-header-row">
+                    <h2>Most Popular</h2>
+                    <button className="see-more-btn" onClick={() => navigate('/courses')}>see more</button>
+                </div>
+                <div className="popular-cards-row">
+                    {popularCourses.map(course => (
+                        <div className="popular-card" key={course.id} onClick={() => navigate(`/course/${course.id}`)}>
+                            <div className="pop-card-image">
+                                <div className="pop-play-circle">
                                     <PlayArrowIcon />
                                 </div>
-                                <button className="close-btn">
-                                    <CloseIcon />
-                                </button>
                             </div>
-                            <div className="learning-card-body">
-                                <p className="learning-card-title">{course.title}</p>
+                            <div className="pop-card-footer">
+                                <h4>{course.name}</h4>
+                                <div className="pop-card-meta">
+                                    <span>{course.instructor}</span>
+                                    <span>{course.price}</span>
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
-            </div>
+            </section>
 
-            {/* ═══ Video Player ═══ */}
-            <section className="video-player-section">
-                <div className="video-thumbnail">
-                    <PlayArrowIcon />
-                </div>
-                <div className="video-info">
-                    <h3 className="video-title">Complete Drawing Course: Ultimate Drawing Art with Pencil</h3>
-                    <p className="video-subtitle">Practice: Draw Face with Pencil</p>
-                    <div className="video-progress-bar">
-                        <div className="video-progress-fill" style={{ width: "45%" }}></div>
+            {/* ═══ 3. Facilities (Dark Section) ═══ */}
+            <section className="home-full-width facilities-section">
+                <div className="facilities-container">
+                    <div className="section-header-row">
+                        <h2>Facilities</h2>
+                        <button className="see-more-btn light">see more</button>
                     </div>
-                </div>
-                <div className="video-actions">
-                    <button className="video-action-btn">
-                        <FavoriteIcon />
-                    </button>
-                    <button className="video-action-btn">
-                        <ShareIcon />
-                    </button>
-                    <button className="video-action-btn">
-                        <SkipNextIcon />
-                    </button>
+                    <div className="facilities-cards-row">
+                        {facilities.map(fac => (
+                            <div className="facility-card" key={fac.id} onClick={() => navigate(`/facility/${fac.id}`)}>
+                                <div className="fac-icon-box">
+                                    <LandscapeIcon />
+                                </div>
+                                <h3>{fac.name}</h3>
+                                <p className="fac-subtitle">{fac.subtitle}</p>
+                                <p className="fac-desc">{fac.desc}</p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
-            {/* ═══ Footer ═══ */}
-            <footer className="home-footer">
-                <div className="footer-logo">ZUMRA</div>
-                <div className="footer-links">
-                    <a className="footer-link" href="#">FAQS</a>
-                    <a className="footer-link" href="#">CONTACT US</a>
-                    <a className="footer-link" href="#">PRIVACY POLICY</a>
+            {/* ═══ 4. My Learning ═══ */}
+            <section className="home-section my-learning-section">
+                <div className="section-header-row">
+                    <h2>My Learning</h2>
+                    <button className="see-more-btn" onClick={() => navigate('/my-courses')}>see more</button>
                 </div>
-                <p className="footer-copyright">© 2026 Zumra. All rights reserved.</p>
+                <div className="learning-cards-row">
+                    {learningCourses.map((course, idx) => (
+                        <div className="learning-card" key={idx} onClick={() => navigate(`/watch/${course.id}`)}>
+                            <div className="lc-image">
+                                <LandscapeIcon />
+                                <div className="lc-play-overlay">
+                                    <PlayCircleIcon />
+                                </div>
+                                {idx === 0 && (
+                                    <div className="lc-badge-overlay">
+                                        <span className="lc-badge-tag">Start Learn</span>
+                                        <span className="lc-badge-sub">(the Future of<br/>eCommerce)</span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="lc-body">
+                                <h4>{course.title}</h4>
+                                <div className="lc-meta-row">
+                                    <span>{course.author}</span>
+                                    <span>{course.lessons} Lessons</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+
+
+
+
+
+            {/* ═══ 7. Footer ═══ */}
+            <footer className="home-footer">
+                <div className="footer-logo">LOGO</div>
+                <div className="footer-links">
+                    <a href="#">FAQS</a>
+                    <a href="#">CONTACT US</a>
+                    <a href="#">ZUMRA FOUNDERS</a>
+                </div>
+                <div className="footer-social">
+                    <a href="#"><FacebookIcon /></a>
+                    <a href="#"><InstagramIcon /></a>
+                    <a href="#"><XIcon /></a>
+                </div>
+                <p className="footer-copyright">©Copyrights 2026</p>
             </footer>
+
         </div>
     );
 }

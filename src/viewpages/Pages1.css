@@ -14,13 +14,13 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #1a1818;
-    color: white;
+    background-color: var(--nav-bg, #1a1818);
+    color: var(--nav-text, white);
     padding: 20px 30px;
     width: 94%;
     margin: 20px auto;
     border-radius: 50px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--nav-shadow, 0px 4px 15px rgba(0, 0, 0, 0.2));
     transition: all 0.3s ease;
 }
 
@@ -35,9 +35,10 @@ header {
     font-size: 24px;
     font-weight: 900;
     padding-right: 20px;
-    border-right: 2px solid #444;
+    border-right: 2px solid var(--nav-border, #444);
     cursor: pointer;
     list-style: none;
+    color: var(--nav-text, white);
 }
 
 .category-btn {
@@ -70,12 +71,221 @@ header {
 .nav-my-learning {
     font-size: 0.9rem;
     font-weight: 500;
-    color: #fff;
+    color: var(--nav-text, #fff);
     white-space: nowrap;
 }
 
 .nav-icon-btn {
-    color: white !important;
+    color: var(--nav-icon-color, white) !important;
+}
+
+/* Theme Toggle Dots */
+.theme-toggle-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-right: 4px;
+}
+.theme-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    padding: 0;
+}
+.theme-dot:hover {
+    transform: scale(1.15);
+}
+.theme-dot.active {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
+    transform: scale(1.15);
+}
+
+/* =========================================
+   CART OVERLAY DROPDOWN
+   ========================================= */
+.nav-cart-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.cart-overlay-dropdown {
+    position: absolute;
+    top: 50px;
+    right: -100px;
+    width: 700px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    padding: 24px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cart-overlay-items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+.cart-overlay-card {
+    background: #c8c9ca;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+    position: relative;
+}
+
+.coc-image {
+    width: 100px;
+    height: 100px;
+    background: #000;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.coc-image svg {
+    color: #fff;
+    font-size: 50px;
+}
+
+.coc-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.coc-content h4 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #000;
+    margin-bottom: 8px;
+    padding-right: 30px;
+}
+
+.coc-content p {
+    font-size: 0.8rem;
+    color: #333;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.coc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin-top: auto;
+}
+
+.coc-tag-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.coc-icon-circle {
+    width: 32px;
+    height: 32px;
+    background: #000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.coc-tag-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.coc-tag-text span {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.coc-tag-text small {
+    font-size: 0.75rem;
+    color: #f1f1f1;
+}
+
+.coc-tag-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.coc-delete-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: 1px solid #000;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #000;
+    transition: background 0.2s;
+}
+
+.coc-delete-btn:hover {
+    background: rgba(0,0,0,0.1);
+}
+
+.cart-overlay-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.btn-checkout {
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-checkout:hover {
+    background: #333;
+}
+
+.btn-keep-shopping {
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-keep-shopping:hover {
+    background: #f1f1f1;
 }
 
 /* --- تنسيقات المحتوى الرئيسي والكارد --- */
@@ -191,7 +401,6 @@ header {
     align-items: center;
 }
 
-
 .interaction-info-bar {
     display: flex;
     align-items: center;
@@ -204,7 +413,6 @@ header {
     display: flex;
     align-items: center;
     gap: 12px;
-
 }
 
 .info-badge.clickable {
@@ -292,5 +500,13 @@ header {
     .card-actions-sidebar {
         width: 100%;
         min-width: unset;
+    }
+    
+    .cart-overlay-dropdown {
+        width: 350px;
+        right: -100px;
+    }
+    .coc-image {
+        display: none;
     }
 }

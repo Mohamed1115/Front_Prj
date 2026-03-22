@@ -1,272 +1,369 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-
+    font-family: 'Inter', sans-serif;
 }
 
-.login-contaner {
+body {
+    background-color: #f7f8fa;
+}
+
+.login-wrapper {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    height: 100vh;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background-color: #f8f9fa; /* Very light gray background like in the image */
+}
+
+.login-card {
+    background: #ffffff;
+    max-width: 480px;
     width: 100%;
-
+    border-radius: 20px;
+    padding: 3.5rem;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
 }
 
-.alltext {
+/* Subtle top gradient pattern as seen in image */
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(180deg, rgba(220, 230, 255, 0.5) 0%, rgba(255, 255, 255, 0) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.login-header {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2rem;
+}
+
+.logo {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.logo-icon {
+    width: 24px;
+    height: 24px;
+    background-color: #3b82f6;
+    border-radius: 50% 50% 0 0; /* Semi-circle */
+    display: inline-block;
+}
+
+.logo-text {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #111;
+    letter-spacing: -0.5px;
+}
+
+.login-header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+    letter-spacing: -1px;
+}
+
+.login-header p {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.social-logins {
+    display: flex;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.social-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #374151;
+    transition: all 0.2s ease;
+    background-color: white;
+    text-decoration: none;
+}
+
+.social-btn:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.social-btn svg {
+    font-size: 24px;
+}
+
+/* Make Google colored */
+.social-btn:nth-child(1) svg {
+    color: #ea4335;
+}
+
+/* Desktop sizing adjustments */
+.divider {
+    display: flex;
     align-items: center;
     text-align: center;
-    height: 100vh;
-    width: 500px;
-
-
+    color: #9ca3af;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
 }
 
-.box-left {
+.divider::before, 
+.divider::after {
+    content: '';
     flex: 1;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.divider span {
+    padding: 0 1rem;
+}
+
+.login-form {
+    position: relative;
+    z-index: 1;
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #111827;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.input-group input:focus {
+    border-color: #9ca3af;
+    box-shadow: 0 0 0 4px rgba(243, 244, 246, 1);
+}
+
+.input-group input::placeholder {
+    color: #9ca3af;
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
     display: flex;
-    justify-content: center;
     align-items: center;
+    padding: 4px;
 }
 
-.image-right {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.toggle-password:hover {
+    color: #4b5563;
 }
 
-.image-box {
-    width: 400px;
-    height: 300px;
-}
-
-.headertype {
-    font-family: sans-serif;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    font-size: 25px;
-    margin-top: 10%;
-}
-
-.headertype h4 {
-    color: #555;
+.toggle-password svg {
     font-size: 20px;
 }
 
-.logcss {
-    font-family: sans-serif;
-    background-color: #FFFFFF1A;
-    border-radius: 15px;
-    padding: 24px;
-    box-shadow: 1px 1px 5px 5px #f4eeee;
-    width: 100%;
-}
-
-.buttons {
-    margin: 5px;
-}
-
-.remember {
+.form-options {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    margin: 8px;
-    border: none;
-}
-
-
-.buttons button {
-
-    font-size: x-large;
-    width: 100%;
-    height: 50px;
-    margin: 8px 0;
-    padding: 8px;
-    background-color: #000000;
-    color: white;
-    border: 0px;
-    border-radius: 15px;
-    transition: 0.3s;
-}
-
-.buttons button:disabled {
-    pointer-events: none;
-    opacity: 0.60;
-}
-
-.mylink {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-
-.Links {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
-
-.Links {
-    font-size: 14px;
-    color: #0a0808;
-    text-decoration: underline;
-}
-
-.remember input {
-    display: none;
-
-}
-
-.remember label {
-    display: flex;
-    justify-content: center;
     align-items: center;
-    cursor: pointer;
-    font-size: 16px;
-    position: relative;
-    margin-bottom: 30px;
+    margin-bottom: 2rem;
+    margin-top: -0.5rem;
 }
 
-.checkbox {
+.remember-checkbox {
     display: flex;
-    justify-content: flex-start;
-    width: 18px;
-    height: 18px;
-    border: 1px solid #555;
-    border-radius: 4px;
-    margin-right: 8px;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #4b5563;
+    font-weight: 500;
+    cursor: pointer;
     position: relative;
+    user-select: none;
+    padding-left: 28px;
 }
 
-.remember input:checked+label .checkbox {
-    background-color: #4caf50;
-    border-color: #4caf50;
+.remember-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
 }
 
-.remember input:checked+label .checkbox::after {
-    content: "✔";
-    color: white;
-    font-size: 12px;
+.checkmark {
     position: absolute;
     top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    left: 0;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 18px;
+    background-color: #fff;
+    border: 1.5px solid #d1d5db;
+    border-radius: 4px;
+    transition: all 0.2s;
 }
 
-
-.foot {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+.remember-checkbox:hover input ~ .checkmark {
+    border-color: #9ca3af;
 }
 
-.google {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 1px solid #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #1877f2;
-    box-sizing: border-box;
-
-    transition: all 0.3s ease;
+.remember-checkbox input:checked ~ .checkmark {
+    background-color: #1f2937;
+    border-color: #1f2937;
 }
 
-.google:hover {
-    background-color: #1fcd4a;
-    color: white;
-    border-color: #1877f2;
-
-    transform: scale(1.1);
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
 }
 
-.facebook {
-    width: 44px;
-    height: 44px;
-
-    border-radius: 50%;
-    border: 1px solid #ddd;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #1877f2;
-    box-sizing: border-box;
-
-    transition: all 0.3s ease;
+.remember-checkbox input:checked ~ .checkmark:after {
+    display: block;
 }
 
-.facebook:hover {
-    background-color: #1877f2;
-    color: white;
-    border-color: #1fcd4a;
-
-    transform: scale(1.1);
-}
-
-.Signup1 {
-    margin: 10px;
-}
-
-.Signup {
-    color: #0a0808;
+.forgot-password {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #4b5563;
     text-decoration: underline;
-    margin: 5px;
 }
 
-hr {
-    font-size: 12px;
+.forgot-password:hover {
+    color: #111827;
+}
+
+.sign-in-btn {
+    width: 100%;
+    background-color: #1f2937; /* Dark grayish-black */
+    color: white;
+    padding: 1rem;
     border: none;
-    border-top: 2px solid #c5bebe;
-    color: #c5bebe;
-    overflow: visible;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 1.5rem;
+}
+
+.sign-in-btn:hover:not(:disabled) {
+    background-color: #111827;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sign-in-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.sign-up-prompt {
     text-align: center;
-    height: 20px;
-    margin: 20px;
+    font-size: 0.9rem;
+    color: #6b7280;
 }
 
-hr::after {
-
-    background: rgb(255, 255, 255);
-    content: "or Login with";
-    padding: 0 40px;
-    position: relative;
-    top: -12px;
+.sign-up-prompt a {
+    color: #111827;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 0.25rem;
 }
 
-@media(max-width: 768px) {
-    .login-contaner {
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
+.sign-up-prompt a:hover {
+    text-decoration: underline;
+}
 
-    .alltext {
-        width: 100%;
-        padding: 20px;
+@media (max-width: 600px) {
+    .login-wrapper {
+        padding: 1rem;
     }
-
-    .image-box {
-        width: 100%;
-        height: auto;
+    .login-card {
+        padding: 2.5rem 1.5rem;
     }
+}
 
-    .headertype {
-        margin-top: 20px;
-        margin-bottom: 200px;
-    }
+.otp-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 2rem;
+}
 
+.otp-input {
+    width: 45px;
+    height: 54px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #111827;
+    outline: none;
+    transition: all 0.2s;
+    background-color: white;
+}
+
+.otp-input:focus {
+    border-color: #9ca3af;
+    box-shadow: 0 0 0 4px rgba(243, 244, 246, 1);
 }
