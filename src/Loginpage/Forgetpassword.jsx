@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { forgotPassword } from '../services/Api';
+import toast from 'react-hot-toast';
 import "./Logincss.css";
 
 export default function Forgetpassword() {
@@ -19,12 +20,12 @@ export default function Forgetpassword() {
         const trimmedEmail = email.trim();
         
         if (!trimmedEmail) {
-            alert("الرجاء إدخال البريد الإلكتروني");
+            toast.error("الرجاء إدخال البريد الإلكتروني");
             return;
         }
         
         if (!validateEmail(trimmedEmail)) {
-            alert("الرجاء إدخال بريد إلكتروني صحيح");
+            toast.error("الرجاء إدخال بريد إلكتروني صحيح");
             return;
         }
         
@@ -32,12 +33,12 @@ export default function Forgetpassword() {
         
         try {
             await forgotPassword(trimmedEmail);
-            alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني");
+            toast.success("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني");
             localStorage.setItem("reset_email", trimmedEmail);
             navigate("/OTP", { state: { email: trimmedEmail } });
         } catch (error) {
             console.error("Forgot password error:", error);
-            alert(error.message || "حدث خطأ أثناء إرسال الطلب");
+            toast.error(error.message || "حدث خطأ أثناء إرسال الطلب");
         } finally {
             setIsLoading(false);
         }

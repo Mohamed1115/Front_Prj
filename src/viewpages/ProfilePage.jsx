@@ -11,16 +11,36 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EditIcon from "@mui/icons-material/Edit";
 import LandscapeIcon from "@mui/icons-material/Landscape";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import VideocamIcon from "@mui/icons-material/Videocam";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import MessageIcon from "@mui/icons-material/Message";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import XIcon from "@mui/icons-material/X";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import toast from "react-hot-toast";
+import { getAllFacilities, getFacilitiesByUserId, createFacility, updateFacility, deleteFacility, getAllCategories, getImageUrl } from "../services/Api";
 
 // ─── Component ───────────────────────────────────────────
 export default function ProfilePage() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("profile");
+
+    // Extract userId from JWT token
+    const getUserIdFromToken = () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return null;
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            // Common .NET Identity claim names
+            return payload.sub ||
+                   payload.nameid ||
+                   payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ||
+                   payload.userId ||
+                   null;
+        } catch { return null; }
+    };
 
     // Theme state (synced with global)
     const [selectedTheme, setSelectedTheme] = useState(() => {
@@ -56,6 +76,108 @@ export default function ProfilePage() {
         setProfileData({ ...profileData, [e.target.name]: e.target.value });
     };
 
+    // --- Facilities State ---
+    const [facilities, setFacilities] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [isLoadingFacilities, setIsLoadingFacilities] = useState(false);
+    const [facilityView, setFacilityView] = useState("list"); // list, add, edit
+    const [currentFacility, setCurrentFacility] = useState({ id: null, name: "", description: "", type: "", categoryId: "", image: null });
+
+    // Fetch Categories
+    useEffect(() => {
+        async function fetchCategories() {
+            try {
+                const data = await getAllCategories();
+                setCategories(data || []);
+            } catch (error) {
+                console.error("Failed to load categories:", error);
+            }
+        }
+        if (activeTab === 'facility') {
+            fetchCategories();
+        }
+    }, [activeTab]);
+
+    useEffect(() => {
+        async function fetchFacilities() {
+            try {
+                setIsLoadingFacilities(true);
+                const userId = getUserIdFromToken();
+                const data = userId
+                    ? await getFacilitiesByUserId(userId)
+                    : await getAllFacilities();
+                setFacilities(Array.isArray(data) ? data : []);
+            } catch (error) {
+                toast.error(error.message || "Failed to load facilities");
+                setFacilities([]);
+            } finally {
+                setIsLoadingFacilities(false);
+            }
+        }
+        if (activeTab === 'facility' && facilityView === 'list') {
+            fetchFacilities();
+        }
+    }, [activeTab, facilityView]);
+
+    const handleFacilitySubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const formData = new FormData();
+            formData.append("Name", currentFacility.name);
+            formData.append("Description", currentFacility.description);
+            
+            const selectedCat = categories.find(c => c.id.toString() === currentFacility.categoryId.toString() || c.Id?.toString() === currentFacility.categoryId.toString());
+            const typeName = selectedCat ? (selectedCat.name || selectedCat.Name) : "Default";
+            
+            formData.append("Type", typeName);
+            formData.append("CategoryId", currentFacility.categoryId);
+            
+            if (currentFacility.image) {
+                formData.append("Image", currentFacility.image);
+            }
+
+            if (facilityView === "add") {
+                if (!currentFacility.image) {
+                    toast.error("Image is required to create a facility.");
+                    return;
+                }
+                await createFacility(formData);
+                toast.success("Facility created successfully");
+            } else if (facilityView === "edit") {
+                await updateFacility(currentFacility.id, formData);
+                toast.success("Facility updated successfully");
+            }
+            setFacilityView("list");
+        } catch (error) {
+            toast.error(error.message || "Failed to save facility");
+        }
+    };
+
+    const handleDeleteFacility = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this facility?")) return;
+        try {
+            await deleteFacility(id);
+            toast.success("Facility deleted successfully");
+            const userId = getUserIdFromToken();
+            const data = userId ? await getFacilitiesByUserId(userId) : await getAllFacilities();
+            setFacilities(Array.isArray(data) ? data : []);
+        } catch (error) {
+            toast.error(error.message || "Failed to delete facility");
+        }
+    };
+
+    const openEditFacility = (fac) => {
+        setCurrentFacility({ 
+            id: fac.id || fac.Id, 
+            name: fac.name || fac.Name || "", 
+            description: fac.description || fac.Description || "",
+            categoryId: fac.categoryId || fac.CategoryId || "",
+            type: fac.type || fac.Type || "",
+            image: null
+        });
+        setFacilityView("edit");
+    };
+
     return (
         <div className="profile-layout-wrapper">
             
@@ -69,6 +191,7 @@ export default function ProfilePage() {
                     {activeTab === 'profile' && 'User Profile'}
                     {activeTab === 'facility' && 'Facility'}
                     {activeTab === 'my-courses' && 'My Learning'}
+                    {activeTab === 'live-meeting' && 'Live Meeting'}
                     {activeTab === 'settings' && 'Setting'}
                 </span>
             </div>
@@ -95,6 +218,12 @@ export default function ProfilePage() {
                             onClick={() => setActiveTab('my-courses')}
                         >
                             <MenuBookIcon /> My Learning
+                        </button>
+                        <button 
+                            className={`sidebar-nav-item ${activeTab === 'live-meeting' ? 'active' : ''}`}
+                            onClick={() => navigate('/live-meeting-test')}
+                        >
+                            <VideocamIcon /> Live Meeting
                         </button>
                         <button 
                             className={`sidebar-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
@@ -164,22 +293,173 @@ export default function ProfilePage() {
                         {/* 2. FACILITY TAB */}
                         {activeTab === 'facility' && (
                             <div className="tab-pane-facility">
-                                <h3 className="settings-section-title">Facility Information</h3>
-                                <p className="settings-subtitle">Manage your facility details and courses.</p>
-                                <div className="settings-form">
-                                    <div className="form-group">
-                                        <label>Facility Name</label>
-                                        <input type="text" value="ZUMRA" readOnly />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Description</label>
-                                        <textarea rows="4" placeholder="Enter facility description..." />
-                                    </div>
-                                    <div className="form-actions-row">
-                                        <button className="btn-secondary">Cancel</button>
-                                        <button className="btn-primary">Save</button>
-                                    </div>
-                                </div>
+                                {facilityView === "list" ? (
+                                    <>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                            <div>
+                                                <h3 className="settings-section-title">My Facilities</h3>
+                                                <p className="settings-subtitle">Manage your facilities and related courses.</p>
+                                            </div>
+                                            <button 
+                                                className="btn-primary" 
+                                                onClick={() => {
+                                                    setCurrentFacility({ id: null, name: "", description: "", type: "", categoryId: "", image: null });
+                                                    setFacilityView("add");
+                                                }}
+                                                style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                                            >
+                                                <AddIcon fontSize="small"/> Add Facility
+                                            </button>
+                                        </div>
+
+                                        {isLoadingFacilities ? (
+                                            <p style={{color: 'var(--text-secondary)'}}>Loading facilities...</p>
+                                        ) : !Array.isArray(facilities) || facilities.length === 0 ? (
+                                            <div style={{ textAlign: 'center', padding: '3rem 2rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                                                <HomeWorkIcon style={{ fontSize: 60, color: 'var(--text-muted, #9ca3af)' }} />
+                                                <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>You don't have any facilities yet.</p>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                {facilities.map((fac, idx) => {
+                                                    const facImage = fac.image || fac.Image || fac.imageUrl || fac.ImageUrl || fac.imagePath || fac.ImagePath || fac.logo || fac.Logo || fac.picture || fac.Picture;
+                                                    const facStatus = fac.status || fac.Status || "Active";
+                                                    const facRole = fac.role || "";
+                                                    const isSuperAdmin = facRole === "FacilitySuperAdmin" || facRole === "SuperAdmin";
+                                                    const roleLabel = facRole
+                                                        ? facRole.replace(/([A-Z])/g, ' $1').trim()
+                                                        : "";
+                                                    return (
+                                                        <div key={fac.id || fac.Id || idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                                <div style={{ width: 60, height: 60, borderRadius: '8px', overflow: 'hidden', background: 'var(--bg-secondary)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                                                    {facImage ? (
+                                                                        <img src={getImageUrl(facImage)} alt={fac.name || fac.Name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                    ) : (
+                                                                        <HomeWorkIcon style={{ color: 'var(--text-muted)' }} />
+                                                                    )}
+                                                                </div>
+                                                                 <div>
+                                                                    <h4 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.2rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                        {fac.name || fac.Name || "Unnamed Facility"}
+                                                                        {facStatus && (
+                                                                            <span style={{ 
+                                                                                fontSize: '0.75rem', 
+                                                                                padding: '2px 8px', 
+                                                                                borderRadius: '12px', 
+                                                                                background: facStatus === 'Pending' ? '#fef08a' : '#bbf7d0', 
+                                                                                color: facStatus === 'Pending' ? '#854d0e' : '#166534' 
+                                                                            }}>
+                                                                                {facStatus}
+                                                                            </span>
+                                                                        )}
+                                                                        {roleLabel && (
+                                                                            <span style={{
+                                                                                fontSize: '0.72rem',
+                                                                                padding: '2px 8px',
+                                                                                borderRadius: '12px',
+                                                                                background: isSuperAdmin ? '#ede9fe' : '#e0e7ff',
+                                                                                color: isSuperAdmin ? '#6d28d9' : '#3730a3',
+                                                                                fontWeight: 600
+                                                                            }}>
+                                                                                {roleLabel}
+                                                                            </span>
+                                                                        )}
+                                                                    </h4>
+                                                                    <p style={{ margin: '0.5rem 0 0', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>{fac.description || fac.Description || "No description provided."}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: '10px' }}>
+                                                                {isSuperAdmin && (
+                                                                    <button className="btn-primary" onClick={() => navigate(`/facility-dashboard/${fac.id || fac.Id}`, { state: { facility: fac } })} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7c3aed', borderColor: '#7c3aed' }}>
+                                                                        Give Access
+                                                                    </button>
+                                                                )}
+                                                                {facStatus === "Pending" && (
+                                                                    <button className="btn-primary" onClick={() => navigate(`/activate-facility/${fac.id || fac.Id}`, { state: { facility: fac } })} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                                        Activate
+                                                                    </button>
+                                                                )}
+                                                                <button className="btn-secondary" onClick={() => navigate(`/facility-settings/${fac.id || fac.Id}`, { state: { facility: fac } })} style={{ display: 'flex', alignItems: 'center', gap: '5px' }} title="Facility Settings">
+                                                                    <SettingsIcon fontSize="small"/>
+                                                                </button>
+                                                                {isSuperAdmin && (
+                                                                    <>
+                                                                        <button className="btn-secondary" onClick={() => openEditFacility(fac)} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                                            <EditIcon fontSize="small"/> Edit
+                                                                        </button>
+                                                                        <button className="btn-secondary" onClick={() => handleDeleteFacility(fac.id || fac.Id)} style={{ color: '#ef4444', borderColor: '#ef4444', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                                            <DeleteIcon fontSize="small"/>
+                                                                        </button>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <h3 className="settings-section-title">
+                                            {facilityView === "add" ? "Add New Facility" : "Edit Facility"}
+                                        </h3>
+                                        <p className="settings-subtitle">Enter facility details below.</p>
+                                        <form className="settings-form" onSubmit={handleFacilitySubmit}>
+                                            <div className="form-group">
+                                                <label>Facility Name <span style={{color: '#ef4444'}}>*</span></label>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Enter facility name..."
+                                                    value={currentFacility.name} 
+                                                    onChange={(e) => setCurrentFacility({...currentFacility, name: e.target.value})}
+                                                    required 
+                                                    autoFocus
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Category (Type) <span style={{color: '#ef4444'}}>*</span></label>
+                                                <select 
+                                                    value={currentFacility.categoryId} 
+                                                    onChange={(e) => setCurrentFacility({...currentFacility, categoryId: e.target.value})}
+                                                    required
+                                                    style={{ padding: "10px", border: "1px solid var(--border-color)", borderRadius: "8px", background: "var(--card-bg)" }}
+                                                >
+                                                    <option value="" disabled>-- Select a Category --</option>
+                                                    {categories.map((cat, idx) => (
+                                                        <option key={cat.id || cat.Id || idx} value={cat.id || cat.Id}>
+                                                            {cat.name || cat.Name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Image <span style={{color: '#ef4444'}}>{facilityView === "add" ? "*" : ""}</span></label>
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*"
+                                                    onChange={(e) => setCurrentFacility({...currentFacility, image: e.target.files[0]})}
+                                                    required={facilityView === "add"}
+                                                    style={{ padding: "10px", border: "1px solid var(--border-color)", borderRadius: "8px", background: "var(--card-bg)" }}
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Description</label>
+                                                <textarea 
+                                                    rows="4" 
+                                                    placeholder="Enter facility description..." 
+                                                    value={currentFacility.description}
+                                                    onChange={(e) => setCurrentFacility({...currentFacility, description: e.target.value})}
+                                                />
+                                            </div>
+                                            <div className="form-actions-row" style={{marginTop: '2rem'}}>
+                                                <button type="button" className="btn-secondary" onClick={() => setFacilityView("list")}>Cancel</button>
+                                                <button type="submit" className="btn-primary">Save Facility</button>
+                                            </div>
+                                        </form>
+                                    </>
+                                )}
                             </div>
                         )}
 

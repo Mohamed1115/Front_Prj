@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../services/Api';
+import toast from 'react-hot-toast';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import "./Logincss.css";
@@ -38,32 +39,32 @@ export default function Signup() {
         const trimmedConfirmPassword = confirmPassword.trim();
         
         if (!trimmedName || !trimmedEmail || !trimmedPassword || !trimmedConfirmPassword) {
-            alert("الرجاء ملء جميع الحقول المطلوبة");
+            toast.error("الرجاء ملء جميع الحقول المطلوبة");
             return;
         }
         
         if (!validateEmail(trimmedEmail)) {
-            alert("الرجاء إدخال بريد إلكتروني صحيح");
+            toast.error("الرجاء إدخال بريد إلكتروني صحيح");
             return;
         }
         
         if (trimmedPhone && !validatePhone(trimmedPhone)) {
-            alert("الرجاء إدخال رقم هاتف صحيح (10-15 رقم)");
+            toast.error("الرجاء إدخال رقم هاتف صحيح (10-15 رقم)");
             return;
         }
         
         if (trimmedPassword.length < 6) {
-            alert("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+            toast.error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
             return;
         }
         
         if (trimmedPassword !== trimmedConfirmPassword) {
-            alert("كلمة المرور وتأكيد كلمة المرور غير متطابقين");
+            toast.error("كلمة المرور وتأكيد كلمة المرور غير متطابقين");
             return;
         }
         
         if (!acceptTerms) {
-            alert("يجب الموافقة على الشروط والأحكام");
+            toast.error("يجب الموافقة على الشروط والأحكام");
             return;
         }
         
@@ -79,11 +80,11 @@ export default function Signup() {
                 acceptTerms: acceptTerms
             });
             
-            alert("تم إنشاء الحساب بنجاح!");
+            toast.success("تم إنشاء الحساب بنجاح!");
             navigate("/");
         } catch (error) {
             console.error("Signup error:", error);
-            alert(error.message || "حدث خطأ أثناء إنشاء الحساب");
+            toast.error(error.message || "حدث خطأ أثناء إنشاء الحساب");
         } finally {
             setIsLoading(false);
         }

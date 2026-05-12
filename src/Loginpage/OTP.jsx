@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { verifyOTP } from "../services/Api";
+import toast from 'react-hot-toast';
 import "./Logincss.css";
 
 export default function OTP() {
@@ -34,23 +35,23 @@ export default function OTP() {
         e.preventDefault();
 
         if (otp.includes("")) {
-            alert("Please enter full OTP");
+            toast.error("Please enter full OTP");
             return;
         }
 
         const otpCode = otp.join("");
         if (!email) {
-            alert("البريد الإلكتروني غير موجود. ارجع لصفحة Forget Password وأعد إرسال OTP.");
+            toast.error("البريد الإلكتروني غير موجود. ارجع لصفحة Forget Password وأعد إرسال OTP.");
             return;
         }
 
         setIsLoading(true);
         try {
             await verifyOTP({ email, otp: otpCode });
-            alert("تم التحقق من OTP بنجاح");
+            toast.success("تم التحقق من OTP بنجاح");
             navigate("/Resetpassword");
         } catch (error) {
-            alert(error.message || "حدث خطأ أثناء التحقق من OTP");
+            toast.error(error.message || "حدث خطأ أثناء التحقق من OTP");
         } finally {
             setIsLoading(false);
         }

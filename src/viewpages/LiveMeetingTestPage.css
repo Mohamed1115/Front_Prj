@@ -1,0 +1,249 @@
+/* ============================================
+   LIVE MEETING TEST PAGE
+   ============================================ */
+
+.lmt-page {
+    font-family: 'Inter', sans-serif;
+    background-color: #f9fafb;
+    min-height: 100vh;
+    padding-bottom: 60px;
+}
+
+/* Header */
+.lmt-header {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 30px 5%;
+    margin-bottom: 40px;
+}
+
+.lmt-back-btn {
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 24px;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.lmt-back-btn:hover {
+    color: var(--btn-primary-bg, #1a1a1a);
+}
+
+.lmt-title-area {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.lmt-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: #ede9fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7c3aed;
+}
+
+.lmt-title-area h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--btn-primary-bg, #1a1a1a);
+    margin: 0 0 8px;
+}
+
+.lmt-title-area p {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Content */
+.lmt-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 5%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.lmt-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.lmt-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.lmt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.lmt-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.lmt-form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.lmt-form-group input {
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s;
+    background: #f9fafb;
+}
+
+.lmt-form-group input:focus {
+    border-color: #7c3aed;
+    background: #fff;
+}
+
+.lmt-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+    padding-top: 20px;
+    border-top: 1px dashed #e5e7eb;
+}
+
+.lmt-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #4b5563;
+    cursor: pointer;
+}
+
+.lmt-checkbox-label input {
+    width: 18px;
+    height: 18px;
+    accent-color: #7c3aed;
+    cursor: pointer;
+}
+
+.lmt-submit-btn {
+    margin-top: 20px;
+    padding: 14px 24px;
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lmt-submit-btn:hover:not(:disabled) {
+    background: #6d28d9;
+}
+
+.lmt-submit-btn:disabled {
+    background: #c4b5fd;
+    cursor: not-allowed;
+}
+
+/* Response Area */
+.lmt-response-card h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 20px;
+}
+
+.lmt-response-card pre {
+    background: #1f2937;
+    color: #f3f4f6;
+    padding: 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.lmt-join-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #10b981;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.lmt-join-btn:hover {
+    background: #059669;
+}
+
+/* Join Banner */
+.lmt-join-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border: 1px solid #6ee7b7;
+    border-radius: 12px;
+    padding: 20px 24px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.lmt-meeting-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lmt-meeting-info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lmt-info-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #065f46;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: 55px;
+}
+
+.lmt-info-value {
+    font-size: 0.9rem;
+    color: #1f2937;
+    font-weight: 500;
+}

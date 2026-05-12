@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { confirmAccount } from "../services/Api";
+import toast from 'react-hot-toast';
 import "./Logincss.css";
 
 export default function Confirm() {
@@ -20,21 +21,21 @@ export default function Confirm() {
         const trimmedCode = code.trim();
 
         if (!trimmedEmail || !trimmedCode) {
-            alert("الرجاء إدخال البريد الإلكتروني وكود التأكيد");
+            toast.error("الرجاء إدخال البريد الإلكتروني وكود التأكيد");
             return;
         }
         if (!validateEmail(trimmedEmail)) {
-            alert("الرجاء إدخال بريد إلكتروني صحيح");
+            toast.error("الرجاء إدخال بريد إلكتروني صحيح");
             return;
         }
 
         setIsLoading(true);
         try {
             await confirmAccount({ email: trimmedEmail, code: trimmedCode });
-            alert("تم تأكيد الحساب بنجاح");
+            toast.success("تم تأكيد الحساب بنجاح");
             navigate("/");
         } catch (error) {
-            alert(error.message || "حدث خطأ أثناء التأكيد");
+            toast.error(error.message || "حدث خطأ أثناء التأكيد");
         } finally {
             setIsLoading(false);
         }

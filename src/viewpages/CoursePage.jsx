@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getCourseById } from "../services/Api";
 import "./CoursePage.css";
 
 // MUI Icons
@@ -25,8 +26,8 @@ import XIcon from "@mui/icons-material/X";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
 
-// ─── Mock Data ───────────────────────────────────────────
-const courseData = {
+// ─── Mock Data Fallback ───────────────────────────────────────────
+const mockCourseData = {
     title: "Complete Drawing Course:\nUltimate Drawing Art with Pencil",
     subtitle: "Unlock the future of Commerce — Where Creativity Meets Opportunity. Master shading, proportions, and character building from scratch to advanced level.",
     instructor: "Jane Cooper",
@@ -102,11 +103,43 @@ const courseData = {
 
 // ─── Component ───────────────────────────────────────────
 export default function CoursePage() {
+    const { courseId } = useParams();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("overview");
     const [openSections, setOpenSections] = useState([0]);
     const [openFaqs, setOpenFaqs] = useState([]);
     const [userRating, setUserRating] = useState(0);
+
+    const [apiCourse, setApiCourse] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchCourse() {
+            try {
+                setLoading(true);
+                const data = await getCourseById(courseId);
+                setApiCourse(Array.isArray(data) ? data[0] : (data?.data || data));
+            } catch (error) {
+                console.error("Failed to load course:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        if (courseId) {
+            fetchCourse();
+        } else {
+            setLoading(false);
+        }
+    }, [courseId]);
+
+    // Merge API data with mock variables to prevent UI from breaking
+    const courseData = apiCourse ? {
+        ...mockCourseData,
+        title: apiCourse.title || apiCourse.name || mockCourseData.title,
+        subtitle: apiCourse.description || apiCourse.subtitle || mockCourseData.subtitle,
+        price: apiCourse.price ? `$${apiCourse.price}` : mockCourseData.price,
+        instructor: apiCourse.instructorName || apiCourse.instructor || mockCourseData.instructor,
+    } : mockCourseData;
 
     const toggleSection = (idx) => {
         setOpenSections((prev) =>
@@ -145,7 +178,12 @@ export default function CoursePage() {
 
     return (
         <div className="course-page">
-            
+            {loading ? (
+                <div style={{ padding: "40px", textAlign: "center" }}>
+                    <h2>Loading course details...</h2>
+                </div>
+            ) : (
+                <>
             {/* ═══ Hero Banner (Gray Background) ═══ */}
             <div className="course-hero">
                 <div className="hero-content-wrapper">
@@ -395,6 +433,8 @@ export default function CoursePage() {
                 </div>
                 <p className="footer-copyright">©Copyrights 2026</p>
             </footer>
+            </>
+            )}
         </div>
     );
 }

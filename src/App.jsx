@@ -18,10 +18,17 @@ import ProfilePage from "./viewpages/ProfilePage";
 import WatchCoursePage from "./viewpages/WatchCoursePage";
 import CreateCoursePage from "./viewpages/CreateCoursePage";
 import CreateFacilityPage from "./viewpages/CreateFacilityPage";
+import ActivateFacilityPage from "./viewpages/ActivateFacilityPage";
+import FacilityDashboardPage from "./viewpages/FacilityDashboardPage";
+import FacilitySettingsPage from "./viewpages/FacilitySettingsPage";
+import LiveMeetingTestPage from "./viewpages/LiveMeetingTestPage";
 import AllCoursesPage from "./viewpages/AllCoursesPage";
 import MyCoursesPage from "./viewpages/MyCoursesPage";
+import CourseControlPanel from "./viewpages/CourseControlPanel";
+import BatchControlPanel from "./viewpages/BatchControlPanel";
 
 import ChatBot from "./viewpages/ChatBot";
+import { Toaster } from 'react-hot-toast';
 
 export default function App() {
   return (
@@ -79,8 +86,41 @@ export default function App() {
         path="/my-courses"
         element={<><Navbar /><MyCoursesPage /></>}
       />
+      <Route
+        path="/activate-facility/:facilityId"
+        element={<><Navbar /><ActivateFacilityPage /></>}
+      />
+      <Route
+        path="/facility-payment-success"
+        element={<><Navbar /><ActivateFacilityPage /></>}
+      />
+      <Route
+        path="/facility-dashboard/:facilityId"
+        element={<><Navbar /><FacilityDashboardPage /></>}
+      />
+      <Route
+        path="/facility-settings/:facilityId"
+        element={<><Navbar /><FacilitySettingsPage /></>}
+      />
+      <Route
+        path="/live-meeting-test"
+        element={<><Navbar /><LiveMeetingTestPage /></>}
+      />
+      <Route
+        path="/facility-payment-cancel"
+        element={<><Navbar /><ActivateFacilityPage /></>}
+      />
+      <Route
+        path="/course-dashboard/:facilityId/:courseId"
+        element={<><Navbar /><CourseControlPanel /></>}
+      />
+      <Route
+        path="/batch-dashboard/:facilityId/:courseId/:batchId"
+        element={<><Navbar /><BatchControlPanel /></>}
+      />
     </Routes>
     <ChatBot />
+    <Toaster position="top-center" />
     </>
   )
 }

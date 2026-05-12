@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { resetPassword as resetPasswordApi } from '../services/Api';
+import toast from 'react-hot-toast';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import "./Logincss.css";
@@ -18,19 +19,19 @@ export default function Resetpassword() {
     async function handleReset(e) {
         e.preventDefault();
         if (!email) {
-            alert("البريد الإلكتروني غير موجود. ارجع لصفحة Forget Password وأعد إرسال OTP.");
+            toast.error("البريد الإلكتروني غير موجود. ارجع لصفحة Forget Password وأعد إرسال OTP.");
             return;
         }
         if (!confirmPassword.trim() || !password.trim()) {
-            alert("الرجاء ملء جميع الحقول");
+            toast.error("الرجاء ملء جميع الحقول");
             return;
         }
         if (password.trim().length < 6) {
-            alert("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+            toast.error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
             return;
         }
         if (password.trim() !== confirmPassword.trim()) {
-            alert("كلمة المرور وتأكيد كلمة المرور غير متطابقين");
+            toast.error("كلمة المرور وتأكيد كلمة المرور غير متطابقين");
             return;
         }
 
@@ -41,11 +42,11 @@ export default function Resetpassword() {
                 password: password.trim(),
                 confirmPassword: confirmPassword.trim(),
             });
-            alert("تم تغيير كلمة المرور بنجاح");
+            toast.success("تم تغيير كلمة المرور بنجاح");
             localStorage.removeItem("reset_email");
             navigate("/");
         } catch (error) {
-            alert(error.message || "حدث خطأ أثناء تغيير كلمة المرور");
+            toast.error(error.message || "حدث خطأ أثناء تغيير كلمة المرور");
         } finally {
             setIsLoading(false);
         }

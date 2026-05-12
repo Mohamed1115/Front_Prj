@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAllCourses, getAllFacilities, getImageUrl } from "../services/Api";
 import "./HomePage.css";
 
 // MUI Icons
@@ -15,19 +16,9 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import XIcon from "@mui/icons-material/X";
 
-// ─── Mock Data ───────────────────────────────────────────
-const popularCourses = [
-    { id: 1, name: "Flutter Course", instructor: "Amr Ahmed", price: "$195" },
-    { id: 2, name: "Backend Course", instructor: "Amr Ahmed", price: "$195" },
-    { id: 3, name: "Frontend Course", instructor: "Amr Ahmed", price: "$195" },
-    { id: 4, name: "UI/UX Design Course", instructor: "Amr Ahmed", price: "$195" },
-];
-
-const facilities = [
-    { id: 1, name: "ZUMRA", subtitle: "Training Institute", desc: "A forward-looking training program designed to enhance your technical skills and industry knowledge. Offering hands-on experience with cutting-edge tools and best practice." },
-    { id: 2, name: "ITI", subtitle: "Training Institute", desc: "Institute for Training, institution providing vocational education and practical training to various levels. Preparing students for diverse employment opportunities." },
-    { id: 3, name: "Udemy", subtitle: "Online Courses", desc: "Access thousands of courses in technology, business, design, and more. Learn at your own pace with expert instructors from around the world." },
-];
+// ─── API Data Placeholders ───────────────────────────────────────────
+// We will load popularCourses and facilities via API and store them in state.
+// ───────────────────────────────────────────────────────────────────
 
 const learningCourses = [
     { id: 1, title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", author: "Jane Cooper", lessons: 12 },
@@ -46,6 +37,31 @@ const upcomingEvents = [
 
 export default function HomePage() {
     const navigate = useNavigate();
+    const [popularCourses, setPopularCourses] = useState([]);
+    const [facilitiesState, setFacilitiesState] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadData() {
+            try {
+                setLoading(true);
+                const coursesData = await getAllCourses();
+                const facilitiesData = await getAllFacilities();
+                
+                // Assuming data could be inside a 'data' property or it's an array itself
+                const cArray = Array.isArray(coursesData) ? coursesData : (coursesData?.data || []);
+                const fArray = Array.isArray(facilitiesData) ? facilitiesData : (facilitiesData?.data || []);
+
+                setPopularCourses(cArray.slice(0, 4));
+                setFacilitiesState(fArray.slice(0, 3));
+            } catch (error) {
+                console.error("Failed to load API data on HomePage:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, []);
 
     return (
         <div className="home-dashboard">
@@ -91,7 +107,11 @@ export default function HomePage() {
                     <button className="see-more-btn" onClick={() => navigate('/courses')}>see more</button>
                 </div>
                 <div className="popular-cards-row">
-                    {popularCourses.map(course => (
+                    {loading ? (
+                        <p style={{ padding: "20px" }}>Loading courses...</p>
+                    ) : popularCourses.length === 0 ? (
+                        <p style={{ padding: "20px" }}>No courses found.</p>
+                    ) : popularCourses.map(course => (
                         <div className="popular-card" key={course.id} onClick={() => navigate(`/course/${course.id}`)}>
                             <div className="pop-card-image">
                                 <div className="pop-play-circle">
@@ -99,10 +119,10 @@ export default function HomePage() {
                                 </div>
                             </div>
                             <div className="pop-card-footer">
-                                <h4>{course.name}</h4>
+                                <h4>{course.name || course.title}</h4>
                                 <div className="pop-card-meta">
-                                    <span>{course.instructor}</span>
-                                    <span>{course.price}</span>
+                                    <span>{course.instructor || "Instructor"}</span>
+                                    <span>{course.price ? `$${course.price}` : "Free"}</span>
                                 </div>
                             </div>
                         </div>
@@ -118,16 +138,27 @@ export default function HomePage() {
                         <button className="see-more-btn light">see more</button>
                     </div>
                     <div className="facilities-cards-row">
-                        {facilities.map(fac => (
-                            <div className="facility-card" key={fac.id} onClick={() => navigate(`/facility/${fac.id}`)}>
-                                <div className="fac-icon-box">
-                                    <LandscapeIcon />
+                        {loading ? (
+                            <p style={{ padding: "20px" }}>Loading facilities...</p>
+                        ) : facilitiesState.length === 0 ? (
+                            <p style={{ padding: "20px" }}>No facilities found.</p>
+                        ) : facilitiesState.map(fac => {
+                            const facImage = fac.image || fac.Image || fac.imageUrl || fac.ImageUrl || fac.imagePath || fac.ImagePath || fac.logo || fac.Logo || fac.picture || fac.Picture;
+                            return (
+                                <div className="facility-card" key={fac.id || fac.Id} onClick={() => navigate(`/facility/${fac.id || fac.Id}`)}>
+                                    <div className="fac-icon-box" style={{ padding: facImage ? 0 : '', overflow: 'hidden' }}>
+                                        {facImage ? (
+                                            <img src={getImageUrl(facImage)} alt={fac.name || fac.Name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        ) : (
+                                            <LandscapeIcon />
+                                        )}
+                                    </div>
+                                    <h3>{fac.name || fac.Name || fac.title}</h3>
+                                    <p className="fac-subtitle">{fac.type || fac.Type || fac.subtitle || "Training Institute"}</p>
+                                    <p className="fac-desc">{fac.desc || fac.description || fac.Description || "A creative learning hub."}</p>
                                 </div>
-                                <h3>{fac.name}</h3>
-                                <p className="fac-subtitle">{fac.subtitle}</p>
-                                <p className="fac-desc">{fac.desc}</p>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </section>

@@ -4,9 +4,10 @@ import XIcon from '@mui/icons-material/X';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import "./Logincss.css";
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { login } from '../services/Api';
+import toast from 'react-hot-toast';
 
 export default function Login() {
     const [checkbox, setCheckbox] = useState(false);
@@ -15,6 +16,18 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const token = params.get("token") || params.get("accessToken") || params.get("jwt");
+        
+        if (token) {
+            localStorage.setItem("token", token);
+            toast.success("Logged in successfully");
+            navigate("/home");
+        }
+    }, [location, navigate]);
 
     async function handleCheckbox(e) {
         setCheckbox(e.target.checked);
@@ -32,17 +45,17 @@ export default function Login() {
         const trimmedPassword = password.trim();
 
         if (!trimmedEmail || !trimmedPassword) {
-            alert("Please fill all fields");
+            toast.error("Please fill all fields");
             return;
         }
 
         if (!validateEmail(trimmedEmail)) {
-            alert("Please enter a valid email");
+            toast.error("Please enter a valid email");
             return;
         }
 
         if (trimmedPassword.length < 3) {
-            alert("Password must be at least 3 characters");
+            toast.error("Password must be at least 3 characters");
             return;
         }
 
@@ -63,15 +76,22 @@ export default function Login() {
                 data?.data?.accessToken;
 
             localStorage.setItem("token", token);
-            alert("Logged in successfully");
+            toast.success("Logged in successfully");
             navigate("/home");
         } catch (error) {
             console.error("Login error:", error);
-            alert(error.message || "An error occurred during login");
+            toast.error(error.message || "An error occurred during login");
         } finally {
             setIsLoading(false);
         }
     }
+
+    const handleGoogleLogin = (e) => {
+        e.preventDefault();
+        const baseUrl = import.meta.env.DEV ? "http://localhost:5000" : (import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "");
+        const returnUrl = encodeURIComponent(`${window.location.origin}/`);
+        window.location.href = `${baseUrl}/Auth/Account/ExternalLogin?provider=Google&returnUrl=${returnUrl}`;
+    };
 
     return (
         <div className="login-wrapper">
@@ -86,9 +106,9 @@ export default function Login() {
                 </div>
 
                 <div className="social-logins">
-                    <a href="https://google.com" target="_blank" rel="noopener noreferrer" className="social-btn">
+                    <button onClick={handleGoogleLogin} className="social-btn" style={{ background: 'none', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
                         <GoogleIcon />
-                    </a>
+                    </button>
                     <a href="https://apple.com" target="_blank" rel="noopener noreferrer" className="social-btn">
                         <AppleIcon />
                     </a>
@@ -149,6 +169,13 @@ export default function Login() {
                     
                     <div className="sign-up-prompt">
                         Don't have an account? <Link to="/Signup">Sign up</Link>
+                    </div>
+
+                    <div className="sign-up-prompt" style={{ marginTop: '8px' }}>
+                        Didn't receive confirmation email?{" "}
+                        <Link to="/Resendemail" style={{ color: 'var(--primary, #7c3aed)', fontWeight: '500' }}>
+                            Resend it
+                        </Link>
                     </div>
                 </form>
             </div>
