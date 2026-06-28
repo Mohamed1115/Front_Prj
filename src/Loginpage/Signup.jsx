@@ -1,14 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../services/Api';
 import toast from 'react-hot-toast';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import "./Logincss.css";
 
 export default function Signup() {
     const navigate = useNavigate();
     const [password, setPassword] = useState("");
+    
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('zumra-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }, []);
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
@@ -90,52 +99,65 @@ export default function Signup() {
         }
     }
     
-    return (   
+    return (
         <div className="login-wrapper">
-            <div className="login-card">
-                <div className="login-header">
-                    <div className="logo">
-                        <span className="logo-icon"></span>
+            <div className="login-card-container">
+                <div className="login-card-header">
+                    <Link to="/" className="logo-container">
+                        <span className="logo-icon-dot"></span>
                         <span className="logo-text">ZUMRA</span>
-                    </div>
-                    <h1>Create an account</h1>
-                    <p>Please enter your details to sign up</p>
+                    </Link>
+                    <h1>Create Account</h1>
+                    <p>Get started with your free account today</p>
                 </div>
 
                 <form onSubmit={handleSignup} className="login-form">
                     <div className="input-group">
                         <label>Full Name</label>
-                        <input 
-                            type="text" 
-                            placeholder="John Doe"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                        />
+                        <div className="input-with-icon">
+                            <PersonOutlineIcon className="input-icon" />
+                            <input 
+                                type="text" 
+                                placeholder="John Doe"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                        </div>
                     </div>
+
                     <div className="input-group">
                         <label>Email Address</label>
-                        <input 
-                            type="email" 
-                            placeholder="name@company.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
+                        <div className="input-with-icon">
+                            <MailOutlineIcon className="input-icon" />
+                            <input 
+                                type="email" 
+                                placeholder="name@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
                     </div>
+
                     <div className="input-group">
                         <label>Phone Number</label>
-                        <input 
-                            type="tel" 
-                            placeholder="+1234567890"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                        />
+                        <div className="input-with-icon">
+                            <LocalPhoneIcon className="input-icon" />
+                            <input 
+                                type="tel" 
+                                placeholder="+1234567890"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                            />
+                        </div>
                     </div>
+
                     <div className="input-group">
                         <label>Password</label>
-                        <div className="password-input-wrapper">
+                        <div className="input-with-icon">
+                            <LockOutlinedIcon className="input-icon" />
                             <input 
                                 type={showPassword ? "text" : "password"} 
-                                placeholder="••••••••"
+                                placeholder="••••••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
@@ -148,12 +170,14 @@ export default function Signup() {
                             </button>
                         </div>
                     </div>
+
                     <div className="input-group">
                         <label>Confirm Password</label>
-                        <div className="password-input-wrapper">
+                        <div className="input-with-icon">
+                            <LockOutlinedIcon className="input-icon" />
                             <input 
                                 type={showConfirmPassword ? "text" : "password"} 
-                                placeholder="••••••••"
+                                placeholder="••••••••••••"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                             />
@@ -167,24 +191,25 @@ export default function Signup() {
                         </div>
                     </div>
 
-                    <div className="form-options">
+                    <div className="form-options-row">
                         <label className="remember-checkbox">
                             <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} />
-                            <span className="checkmark"></span>
-                            I accept the terms and conditions
+                            I accept the terms & conditions
                         </label>
                     </div>
 
                     <button 
                         type="submit" 
-                        className="sign-in-btn" 
+                        className="premium-action-btn" 
                         disabled={!email.trim() || !password.trim() || !name.trim() || !confirmPassword.trim() || !acceptTerms || isLoading}
                     >
-                        {isLoading ? "Signing up..." : "Sign up"}
+                        {isLoading ? "Signing up..." : "Sign Up"}
                     </button>
                     
-                    <div className="sign-up-prompt">
-                        Already have an account? <Link to="/">Log in</Link>
+                    <div className="auth-footer-container">
+                        <div className="auth-footer-prompt">
+                            Already have an account? <Link to="/">Login</Link>
+                        </div>
                     </div>
                 </form>
             </div>

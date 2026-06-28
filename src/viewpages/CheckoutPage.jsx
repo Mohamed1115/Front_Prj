@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getImageUrl, payForOrder, getOrderItems, removeFromOrder, confirmOrderSuccess } from "../services/Api";
 import "./CheckoutPage.css";
 
 // MUI Icons
@@ -15,37 +16,79 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 export default function CheckoutPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [currentStep, setCurrentStep] = useState(1); // 1: Cart, 2: Payment, 3: Confirmation
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    // Mock Cart Data
-    const [cartItems, setCartItems] = useState([
-        {
-            id: 1,
-            title: "Complete Drawing Course: Ultimate Drawing Art with Pencil",
-            instructor: "Jane Cooper",
-            rating: 4.8,
-            price: 119.99,
-            oldPrice: 189.99
-        },
-        {
-            id: 2,
-            title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", // Duplicate to match wireframe displaying 2 items
-            instructor: "Jane Cooper",
-            rating: 4.8,
-            price: 119.99,
-            oldPrice: 189.99
+    const [cartItems, setCartItems] = useState([]);
+
+    // Handle Stripe redirect back
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const status = params.get('status');
+        if (status === 'success') {
+            // User returned from Stripe after successful payment
+            confirmOrderSuccess()
+                .then(() => {
+                    console.log('Order confirmed successfully');
+                })
+                .catch((err) => {
+                    console.error('Failed to confirm order:', err);
+                });
+            setCurrentStep(3);
+            window.scrollTo(0, 0);
+            // Clean the URL
+            navigate('/checkout', { replace: true });
+        } else if (status === 'cancel') {
+            alert('تم إلغاء عملية الدفع.');
+            navigate('/checkout', { replace: true });
         }
-    ]);
+    }, [location.search]);
 
-    const handleRemove = (id, indexToRemove) => {
-        // filter by index to allow removing duplicates individually
-        setCartItems(cartItems.filter((_, idx) => idx !== indexToRemove));
+    useEffect(() => {
+        const fetchCart = async () => {
+            try {
+                const data = await getOrderItems();
+                console.log("=== CHECKOUT: getOrderItems response ===", JSON.stringify(data, null, 2));
+                
+                // Handle all possible C# serialization casing
+                let fetchedCart = [];
+                const cartData = data?.Data || data?.data;
+                
+                if (cartData?.Cart) fetchedCart = cartData.Cart;
+                else if (cartData?.cart) fetchedCart = cartData.cart;
+                else if (Array.isArray(cartData)) fetchedCart = cartData;
+                else if (Array.isArray(data)) fetchedCart = data;
+                
+                console.log("=== CHECKOUT: parsed cart items ===", fetchedCart);
+                setCartItems(fetchedCart);
+            } catch (error) {
+                console.error("Failed to load cart:", error);
+                const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+                setCartItems(savedCart);
+            }
+        };
+        fetchCart();
+    }, []);
+
+    const handleRemove = async (item, indexToRemove) => {
+        try {
+            await removeFromOrder(item.EnrollmentId || item.enrollmentId || item.id);
+            const updatedCart = cartItems.filter((_, idx) => idx !== indexToRemove);
+            setCartItems(updatedCart);
+        } catch (error) {
+            console.error("Failed to remove item:", error);
+            alert("حدث خطأ أثناء إزالة الكورس.");
+        }
     };
 
     // Derived values
-    const subtotal = cartItems.reduce((acc, item) => acc + item.oldPrice, 0);
-    const discounts = cartItems.reduce((acc, item) => acc + (item.oldPrice - item.price), 0);
-    const total = subtotal - discounts;
+    const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
+    const subtotal = safeCartItems.reduce((acc, item) => {
+        const price = item?.CourseCost || item?.courseCost || item?.price || 0;
+        return acc + Number(price);
+    }, 0);
+    const total = subtotal;
 
     // Stepper config
     const steps = [
@@ -55,14 +98,42 @@ export default function CheckoutPage() {
     ];
 
     // Navigation Handlers
-    const goToPayment = () => {
-        setCurrentStep(2);
-        window.scrollTo(0, 0);
+    const goToPayment = async () => {
+        setIsProcessing(true);
+        try {
+            const res = await payForOrder();
+            let redirectUrl = null;
+            
+            if (typeof res === 'string' && res.startsWith('http')) {
+                redirectUrl = res;
+            } else if (res?.CheckoutUrl) {
+                redirectUrl = res.CheckoutUrl;
+            } else if (res?.checkoutUrl) {
+                redirectUrl = res.checkoutUrl;
+            } else if (res?.url) {
+                redirectUrl = res.url;
+            } else if (res?.data?.url) {
+                redirectUrl = res.data.url;
+            }
+
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
+            } else {
+                alert("لم يتم العثور على رابط Stripe. Response: " + JSON.stringify(res));
+                console.error("Invalid Response:", res);
+            }
+        } catch (error) {
+            console.error("Payment redirect failed:", error);
+            alert("فشل الاتصال بالـ API: " + error.message);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const placeOrder = () => {
         setCurrentStep(3);
         window.scrollTo(0, 0);
+        localStorage.removeItem('cart');
     };
 
     const backToCart = () => {
@@ -113,31 +184,37 @@ export default function CheckoutPage() {
                     <div className="checkout-left">
                         <h2 className="section-title">Shopping Cart</h2>
                         <div className="cart-items-list">
-                            {cartItems.map((item, idx) => (
-                                <div className="cart-item-card" key={idx}>
-                                    <div className="cart-item-image">
-                                        <LandscapeIcon />
-                                    </div>
-                                    <div className="cart-item-details">
-                                        <h3>{item.title}</h3>
-                                        <div className="cart-item-meta">
-                                            <span className="cart-item-instructor">👨‍🏫 {item.instructor}</span>
-                                            <span className="cart-item-rating">
-                                                <StarIcon fontSize="small" style={{ color: "#f59e0b" }} /> {item.rating}
-                                            </span>
+                            {safeCartItems.map((item, idx) => {
+                                const title = item.CourseName || item.courseName || item.title || 'Course';
+                                const subtitle = item.BatchTitle || item.batchTitle || item.instructor || '';
+                                const price = item.CourseCost || item.courseCost || item.price || 0;
+                                const imageUrl = item.CourseImage || item.courseImage || item.imageUrl || null;
+                                return (
+                                    <div className="cart-item-card" key={idx}>
+                                        <div className="cart-item-image" style={{ padding: imageUrl ? 0 : '', overflow: 'hidden' }}>
+                                            {imageUrl ? (
+                                                <img src={getImageUrl(imageUrl)} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <LandscapeIcon />
+                                            )}
+                                        </div>
+                                        <div className="cart-item-details">
+                                            <h3>{title}</h3>
+                                            <div className="cart-item-meta">
+                                                <span className="cart-item-instructor">👨‍🏫 {subtitle}</span>
+                                            </div>
+                                        </div>
+                                        <div className="cart-item-pricing-actions">
+                                            <div className="cart-item-prices">
+                                                <span className="cart-price">${Number(price).toFixed(2)}</span>
+                                            </div>
+                                            <button className="cart-remove-btn" onClick={() => handleRemove(item, idx)}>
+                                                <DeleteOutlineIcon fontSize="small" /> Remove
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="cart-item-pricing-actions">
-                                        <div className="cart-item-prices">
-                                            <span className="cart-price">${item.price.toFixed(2)}</span>
-                                            <span className="cart-old-price">${item.oldPrice.toFixed(2)}</span>
-                                        </div>
-                                        <button className="cart-remove-btn" onClick={() => handleRemove(item.id, idx)}>
-                                            <DeleteOutlineIcon fontSize="small" /> Remove
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                             {cartItems.length === 0 && <p>Your cart is empty.</p>}
                         </div>
                     </div>
@@ -160,10 +237,6 @@ export default function CheckoutPage() {
                                 <span>${subtotal.toFixed(2)}</span>
                             </div>
                             <div className="summary-row">
-                                <span>Discount</span>
-                                <span style={{ color: "#16a34a" }}>-${discounts.toFixed(2)}</span>
-                            </div>
-                            <div className="summary-row">
                                 <span>Tax</span>
                                 <span>$0.00</span>
                             </div>
@@ -176,9 +249,9 @@ export default function CheckoutPage() {
                             <button 
                                 className="primary-action-btn" 
                                 onClick={goToPayment}
-                                disabled={cartItems.length === 0}
+                                disabled={cartItems.length === 0 || isProcessing}
                             >
-                                Proceed to Checkout
+                                {isProcessing ? "Processing..." : "Proceed to Checkout"}
                             </button>
 
                             <ul className="checkout-terms-list">
@@ -271,12 +344,17 @@ export default function CheckoutPage() {
                             <div className="mini-cart-list">
                                 {cartItems.map((item, idx) => (
                                     <div className="mini-cart-item" key={idx}>
-                                        <div className="mci-image"><LandscapeIcon /></div>
+                                        <div className="mci-image" style={{ padding: item.imageUrl ? 0 : '', overflow: 'hidden' }}>
+                                            {item.imageUrl ? (
+                                                <img src={getImageUrl(item.imageUrl)} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <LandscapeIcon />
+                                            )}
+                                        </div>
                                         <div className="mci-details">
                                             <h4>{item.title}</h4>
                                             <div className="mci-prices">
                                                 <span>${item.price.toFixed(2)}</span>
-                                                <span className="mci-old-price">${item.oldPrice.toFixed(2)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -294,10 +372,6 @@ export default function CheckoutPage() {
                             <div className="summary-row">
                                 <span>Subtotal</span>
                                 <span>${subtotal.toFixed(2)}</span>
-                            </div>
-                            <div className="summary-row">
-                                <span>Discount</span>
-                                <span style={{ color: "#16a34a" }}>-${discounts.toFixed(2)}</span>
                             </div>
                             
                             <div className="summary-total">
@@ -343,7 +417,13 @@ export default function CheckoutPage() {
                             <div className="receipt-items">
                                 {cartItems.map((item, idx) => (
                                     <div className="receipt-item" key={idx}>
-                                        <div className="ri-image"><LandscapeIcon /></div>
+                                        <div className="ri-image" style={{ padding: item.imageUrl ? 0 : '', overflow: 'hidden' }}>
+                                            {item.imageUrl ? (
+                                                <img src={getImageUrl(item.imageUrl)} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <LandscapeIcon />
+                                            )}
+                                        </div>
                                         <div className="ri-details">
                                             <h4>{item.title}</h4>
                                             <span>⭐ {item.rating} • {item.instructor}</span>
@@ -356,10 +436,6 @@ export default function CheckoutPage() {
                             <div className="receipt-row">
                                 <span>Subtotal</span>
                                 <span>${subtotal.toFixed(2)}</span>
-                            </div>
-                            <div className="receipt-row">
-                                <span>Discount</span>
-                                <span style={{ color: "#16a34a" }}>-${discounts.toFixed(2)}</span>
                             </div>
                             <div className="receipt-total">
                                 <span>Total Paid</span>
@@ -391,7 +467,6 @@ export default function CheckoutPage() {
                     <a href="#" className="social-icon"><InstagramIcon /></a>
                     <a href="#" className="social-icon"><XIcon /></a>
                 </div>
-                <p className="footer-copyright">©Copyrights 2026</p>
             </footer>
         </div>
     );

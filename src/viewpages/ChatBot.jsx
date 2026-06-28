@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './ChatBot.css';
 
 // MUI Icons
@@ -18,6 +18,16 @@ import LandscapeIcon from '@mui/icons-material/Landscape';
 
 export default function ChatBot() {
     const [isOpen, setIsOpen] = useState(false);
+    const [messages, setMessages] = useState([
+        {
+            id: 1,
+            sender: 'bot',
+            text: "مرحباً بك في بوت زمرة. كيف يمكنني مساعدتك اليوم؟\nWelcome to ZUMRA bot. How can I help you today?",
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+    ]);
+    const [inputValue, setInputValue] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     
     // UI Flow states based on wireframes:
     // 0: Normal chat
@@ -26,6 +36,75 @@ export default function ChatBot() {
     // 3: File selected/uploading
     // 4: Audio recording sent (mock)
     const [chatState, setChatState] = useState(0);
+
+    const messagesEndRef = useRef(null);
+
+    // Auto scroll to bottom of chat
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages, isLoading]);
+
+    useEffect(() => {
+        if (isOpen && messagesEndRef.current) {
+            setTimeout(() => {
+                messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+    }, [isOpen]);
+
+    // Helper to decode JWT token
+    const getTokenPayload = (token) => {
+        if (!token) return null;
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const getUserIdFromToken = () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return "1";
+            const payload = getTokenPayload(token);
+            if (!payload) return "1";
+            return payload.sub ||
+                   payload.nameid ||
+                   payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ||
+                   payload.userId ||
+                   "1";
+        } catch { return "1"; }
+    };
+
+    const getSessionId = () => {
+        let sid = sessionStorage.getItem("chatSessionId");
+        if (!sid) {
+            sid = Math.floor(100000 + Math.random() * 900000).toString();
+            sessionStorage.setItem("chatSessionId", sid);
+        }
+        return sid;
+    };
+
+    const startNewChat = () => {
+        const newSid = Math.floor(100000 + Math.random() * 900000).toString();
+        sessionStorage.setItem("chatSessionId", newSid);
+        setMessages([
+            {
+                id: Date.now(),
+                sender: 'bot',
+                text: "مرحباً بك في بوت زمرة. تم بدء محادثة جديدة! كيف يمكنني مساعدتك اليوم؟\nWelcome to ZUMRA bot. New chat started! How can I help you today?",
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+        ]);
+        setChatState(0);
+    };
 
     const toggleChat = () => setIsOpen(!isOpen);
 
@@ -42,12 +121,104 @@ export default function ChatBot() {
         setChatState(3); // Mock file selected
     };
 
+    const handleSendMessage = async () => {
+        const text = inputValue.trim();
+        if (!text) return;
+
+        const userMsg = {
+            id: Date.now(),
+            sender: 'user',
+            text: text,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setMessages(prev => [...prev, userMsg]);
+        setInputValue('');
+        setIsLoading(true);
+
+        const userId = getUserIdFromToken();
+        const sessionId = getSessionId();
+
+        try {
+            const response = await fetch("https://n8n.zumra.site/webhook/3c147e6b-f549-4307-b54c-8ae8c17b14ce", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    sessionId: sessionId,
+                    type: "Text",
+                    message: text
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server status: ${response.status}`);
+            }
+
+            const responseText = await response.text();
+            let botReply = '';
+
+            try {
+                const data = JSON.parse(responseText);
+                if (Array.isArray(data) && data.length > 0) {
+                    const item = data[0];
+                    botReply = item.output || item.message || item.response || item.text || item.reply || item.content || (typeof item === 'string' ? item : JSON.stringify(item));
+                } else {
+                    botReply = data.output || data.message || data.response || data.text || data.reply || data.content || (typeof data === 'string' ? data : JSON.stringify(data));
+                }
+            } catch {
+                botReply = responseText;
+            }
+
+            if (!botReply || typeof botReply !== 'string' || botReply.trim() === '') {
+                botReply = responseText || "No response received.";
+            }
+
+            const botMsg = {
+                id: Date.now() + 1,
+                sender: 'bot',
+                text: botReply,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            setMessages(prev => [...prev, botMsg]);
+        } catch (error) {
+            console.error("ChatBot error:", error);
+            const errorMsg = {
+                id: Date.now() + 1,
+                sender: 'bot',
+                text: "عذراً، حدث خطأ أثناء الاتصال بالخادم. يرجى المحاولة مرة أخرى.",
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                isError: true
+            };
+            setMessages(prev => [...prev, errorMsg]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleSendAction = () => {
         if (chatState === 3) {
-            setChatState(0); // File sent, return to normal
+            const fileMsg = {
+                id: Date.now(),
+                sender: 'user',
+                text: 'Sent attachment: photo.png',
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                isFile: true
+            };
+            setMessages(prev => [...prev, fileMsg]);
+            setChatState(0);
         } else {
-            // Mock sending an audio file just to show the final state from wireframe
-            setChatState(4);
+            const audioMsg = {
+                id: Date.now(),
+                sender: 'user',
+                isAudio: true,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+            setMessages(prev => [...prev, audioMsg]);
+            setChatState(0);
         }
     };
 
@@ -73,32 +244,60 @@ export default function ChatBot() {
                                 <p>Support Agent</p>
                             </div>
                         </div>
-                        <button className="cb-close-btn" onClick={toggleChat}>
-                            <CloseIcon fontSize="small"/>
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button 
+                                className="cb-close-btn" 
+                                onClick={startNewChat} 
+                                title="محادثة جديدة / New Chat"
+                                style={{ display: 'flex', alignItems: 'center' }}
+                            >
+                                <DeleteOutlineIcon fontSize="small" style={{ color: '#ef4444' }} />
+                            </button>
+                            <button className="cb-close-btn" onClick={toggleChat}>
+                                <CloseIcon fontSize="small"/>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Messages Area */}
                     <div className="chatbot-messages">
-                        <div className="cb-date-divider">Yesterday 02:43 PM</div>
+                        <div className="cb-date-divider">Today</div>
                         
-                        <div className="cb-msg-bubble user">
-                            Hello Nice
-                        </div>
-                        
-                        <div className="cb-msg-bubble bot">
-                            Welcome to LiveChat. I was made with... Pick a topic from the list or type down a question!
-                        </div>
+                        {messages.map((msg) => (
+                            <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                {msg.isAudio ? (
+                                    <div className="cb-msg-bubble user cb-audio-bubble">
+                                        <button className="cb-audio-play"><PlayArrowIcon fontSize="small"/></button>
+                                        <div className="cb-audio-wave">||||ı|ıı|||ı|ı|| O:05</div>
+                                        <VolumeUpIcon fontSize="small" className="cb-audio-vol"/>
+                                    </div>
+                                ) : (
+                                    <div className={`cb-msg-bubble ${msg.sender} ${msg.isError ? 'cb-error' : ''}`} style={{ whiteSpace: 'pre-line' }}>
+                                        {msg.text}
+                                    </div>
+                                )}
+                                <span style={{
+                                    fontSize: '0.7rem',
+                                    color: '#9ca3af',
+                                    alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                                    margin: '2px 8px 8px 8px'
+                                }}>
+                                    {msg.time}
+                                </span>
+                            </div>
+                        ))}
 
-                        <div className="cb-date-divider">Today 02:12 PM</div>
-
-                        {chatState === 4 && (
-                            <div className="cb-msg-bubble user cb-audio-bubble">
-                                <button className="cb-audio-play"><PlayArrowIcon fontSize="small"/></button>
-                                <div className="cb-audio-wave">||||ı|ıı|||ı|ı|| O:05</div>
-                                <VolumeUpIcon fontSize="small" className="cb-audio-vol"/>
+                        {isLoading && (
+                            <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                <div className="cb-msg-bubble bot" style={{ display: 'flex', gap: '4px', alignItems: 'center', padding: '10px 14px', width: 'fit-content' }}>
+                                    <span className="dot-bounce"></span>
+                                    <span className="dot-bounce"></span>
+                                    <span className="dot-bounce"></span>
+                                </div>
                             </div>
                         )}
+
+                        <div ref={messagesEndRef} />
                     </div>
 
                     {/* OVERLAYS FOR ATTACHMENTS */}
@@ -157,13 +356,26 @@ export default function ChatBot() {
 
                     {/* Footer Input */}
                     <div className="chatbot-footer">
-                        <input type="text" placeholder="Write a message" />
+                        <input 
+                            type="text" 
+                            placeholder="Write a message..." 
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleSendMessage();
+                                }
+                            }}
+                            disabled={isLoading}
+                        />
                         <div className="cb-footer-actions">
                             <button><MicNoneIcon fontSize="small"/></button>
                             <button onClick={handleAttachClick} className={chatState === 1 ? 'active' : ''}>
                                 <AttachFileIcon fontSize="small"/>
                             </button>
-                            <button onClick={handleSendAction}><SendIcon fontSize="small"/></button>
+                            <button onClick={handleSendMessage} disabled={isLoading || !inputValue.trim()}>
+                                <SendIcon fontSize="small"/>
+                            </button>
                         </div>
                     </div>
                 </div>

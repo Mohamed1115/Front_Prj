@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./MyCoursesPage.css";
+import { getMyEnrollments, getImageUrl } from "../services/Api";
 
 // MUI Icons
 import LandscapeIcon from "@mui/icons-material/Landscape";
@@ -9,37 +10,54 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import XIcon from "@mui/icons-material/X";
 
-// ─── Mock Data ───────────────────────────────────────────
-const myCourses = [
-    { id: 1, title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", instructor: "Jane Cooper", progress: 65, status: "in-progress" },
-    { id: 2, title: "Flutter Development Bootcamp", instructor: "Amr Ahmed", progress: 30, status: "in-progress" },
-    { id: 3, title: "Frontend Web Development with React", instructor: "Amr Ahmed", progress: 100, status: "completed" },
-    { id: 4, title: "UI/UX Design Masterclass", instructor: "Jane Cooper", progress: 100, status: "completed" },
-    { id: 5, title: "Backend Development with Node.js", instructor: "Amr Ahmed", progress: 10, status: "in-progress" },
-    { id: 6, title: "Digital Marketing Strategy", instructor: "Sara Ali", progress: 45, status: "in-progress" },
-];
-
 const tabs = [
     { id: "all", label: "All Courses" },
-    { id: "in-progress", label: "In Progress" },
-    { id: "completed", label: "Completed" },
 ];
 
-// ─── Component ───────────────────────────────────────────
 export default function MyCoursesPage() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("all");
+    const [courses, setCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const filteredCourses = activeTab === "all"
-        ? myCourses
-        : myCourses.filter((c) => c.status === activeTab);
+    useEffect(() => {
+        async function fetchMyCourses() {
+            try {
+                setLoading(true);
+                setError(null);
+                const res = await getMyEnrollments();
+                if (res && res.success) {
+                    setCourses(res.data || []);
+                } else {
+                    setError("Failed to load your courses");
+                }
+            } catch (err) {
+                console.error(err);
+                setError(err.message || "An error occurred while fetching courses");
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchMyCourses();
+    }, []);
+
+    const filteredCourses = courses.filter((course) => {
+        // Since backend does not track progress percentages yet, we default to 0.
+        // If progress is 100, we mark as completed, otherwise in-progress.
+        const progress = course.progress || 0;
+        const status = progress === 100 ? "completed" : "in-progress";
+
+        if (activeTab === "all") return true;
+        return status === activeTab;
+    });
 
     return (
         <div className="my-courses-page">
             {/* Header */}
             <div className="my-courses-header">
-                <h1>My Courses</h1>
-                <p>Track your learning progress</p>
+                <h1>My Learning</h1>
+                <p>Track your learning progress and access your enrolled courses</p>
             </div>
 
             {/* Tabs */}
@@ -55,46 +73,69 @@ export default function MyCoursesPage() {
                 ))}
             </div>
 
-            {/* Courses Grid */}
-            {filteredCourses.length > 0 ? (
-                <div className="my-courses-grid">
-                    {filteredCourses.map((course) => (
-                        <div
-                            className="my-course-card"
-                            key={course.id}
-                            onClick={() => navigate(`/watch/${course.id}`)}
-                        >
-                            <div className="my-course-card-image">
-                                <LandscapeIcon />
-                                <span className="my-course-progress-badge">
-                                    {course.progress}%
-                                </span>
-                            </div>
-                            <div className="my-course-card-body">
-                                <h3 className="my-course-card-title">{course.title}</h3>
-                                <p className="my-course-card-instructor">👤 {course.instructor}</p>
-                                <div className="my-course-progress-bar">
-                                    <div
-                                        className="my-course-progress-fill"
-                                        style={{ width: `${course.progress}%` }}
-                                    />
-                                </div>
-                                <span className="my-course-progress-text">
-                                    {course.progress}% completed
-                                </span>
-                            </div>
-                        </div>
-                    ))}
+            {/* Error State */}
+            {error && (
+                <div style={{ padding: "0 5% 20px", color: "#dc2626", fontWeight: "500" }}>
+                    ⚠️ {error}
+                </div>
+            )}
+
+            {/* Loading State */}
+            {loading ? (
+                <div style={{ padding: "80px 0", textAlign: "center", color: "#6b7280" }}>
+                    <div style={{
+                        display: "inline-block",
+                        width: "40px",
+                        height: "40px",
+                        border: "4px solid rgba(0,0,0,0.1)",
+                        borderTopColor: "var(--btn-primary-bg, #1a1a1a)",
+                        borderRadius: "50%",
+                        animation: "spin 1s linear infinite"
+                    }} />
+                    <p style={{ marginTop: "16px", fontSize: "0.95rem" }}>Loading your courses...</p>
+                    <style>{`
+                        @keyframes spin {
+                            to { transform: rotate(360deg); }
+                        }
+                    `}</style>
                 </div>
             ) : (
-                <div className="my-courses-empty">
-                    <SchoolIcon />
-                    <h3>No courses yet</h3>
-                    <p>Start learning by browsing our course catalog</p>
-                    <button className="browse-courses-btn" onClick={() => navigate("/courses")}>
-                        Browse Courses
-                    </button>
-                </div>
+                /* Courses Grid */
+                filteredCourses.length > 0 ? (
+                    <div className="my-courses-grid">
+                        {filteredCourses.map((course) => {
+                            const imageUrl = getImageUrl(course.courseImage);
+                            return (
+                                <div
+                                    className="my-course-card"
+                                    key={course.enrollmentId}
+                                    onClick={() => navigate(`/watch/${course.courseId}`)}
+                                >
+                                    <div className="my-course-card-image">
+                                        {imageUrl ? (
+                                            <img src={imageUrl} alt={course.courseName} className="my-course-img" />
+                                        ) : (
+                                            <LandscapeIcon />
+                                        )}
+                                    </div>
+                                    <div className="my-course-card-body">
+                                        <h3 className="my-course-card-title">{course.courseName}</h3>
+                                        <p className="my-course-card-instructor">👤 {course.instructorName || "Instructor"}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="my-courses-empty">
+                        <SchoolIcon />
+                        <h3>No courses yet</h3>
+                        <p>Start learning by browsing our course catalog</p>
+                        <button className="browse-courses-btn" onClick={() => navigate("/courses")}>
+                            Browse Courses
+                        </button>
+                    </div>
+                )
             )}
 
             {/* Footer */}
@@ -110,7 +151,6 @@ export default function MyCoursesPage() {
                     <a href="#" className="social-icon"><InstagramIcon /></a>
                     <a href="#" className="social-icon"><XIcon /></a>
                 </div>
-                <p className="footer-copyright">©Copyrights 2026</p>
             </footer>
         </div>
     );

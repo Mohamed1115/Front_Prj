@@ -1,12 +1,19 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { confirmAccount } from "../services/Api";
 import toast from 'react-hot-toast';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import "./Logincss.css";
 
 export default function Confirm() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('zumra-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }, []);
     const [code, setCode] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
@@ -43,47 +50,56 @@ export default function Confirm() {
 
     return (
         <div className="login-wrapper">
-            <div className="login-card">
-                <div className="login-header">
-                    <div className="logo">
-                        <span className="logo-icon"></span>
+            <div className="login-card-container">
+                <div className="login-card-header">
+                    <Link to="/" className="logo-container">
+                        <span className="logo-icon-dot"></span>
                         <span className="logo-text">ZUMRA</span>
-                    </div>
+                    </Link>
                     <h1>Confirm Account</h1>
-                    <p>Enter your email and confirmation code</p>
+                    <p>Enter your email and confirmation code to activate your account</p>
                 </div>
 
                 <form onSubmit={handleConfirm} className="login-form">
                     <div className="input-group">
                         <label>Email Address</label>
-                        <input 
-                            type="email" 
-                            placeholder="Your Email Address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
+                        <div className="input-with-icon">
+                            <MailOutlineIcon className="input-icon" />
+                            <input 
+                                type="email" 
+                                placeholder="name@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
                     </div>
+                    
                     <div className="input-group">
                         <label>Confirmation Code</label>
-                        <input 
-                            type="text" 
-                            placeholder="Enter Code"
-                            value={code}
-                            onChange={(e) => setCode(e.target.value)}
-                        />
+                        <div className="input-with-icon">
+                            <LockOutlinedIcon className="input-icon" />
+                            <input 
+                                type="text" 
+                                placeholder="Enter Code"
+                                value={code}
+                                onChange={(e) => setCode(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <button 
                         type="submit" 
-                        className="sign-in-btn" 
+                        className="premium-action-btn" 
                         disabled={isLoading || !email.trim() || !code.trim()}
                         style={{ marginTop: '1rem' }}
                     >
                         {isLoading ? "Confirming..." : "Confirm"}
                     </button>
                     
-                    <div className="sign-up-prompt">
-                        Back to <Link to="/">Login</Link>
+                    <div className="auth-footer-container">
+                        <div className="auth-footer-prompt">
+                            Back to <Link to="/">Login</Link>
+                        </div>
                     </div>
                 </form>
             </div>

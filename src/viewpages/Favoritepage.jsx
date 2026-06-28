@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Breadcrumbs, Link, Typography, Button } from "@mui/material"; // ضفنا Button هنا
+import { Breadcrumbs, Link, Typography, Button } from "@mui/material";
+import { getImageUrl } from "../services/Api";
 import { useNavigate } from 'react-router-dom';
 import LandscapeIcon from '@mui/icons-material/Landscape';
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -60,8 +61,12 @@ export default function Favoritepage() {
                 favs.map((course) => (
                     <div className="course-card-wrapper" key={course.id}>
                         <div className="course-card-container">
-                            <div className="image-placeholder-box">
-                                <LandscapeIcon className="placeholder-icon" />
+                            <div className="image-placeholder-box" style={{ padding: course.imageUrl ? 0 : '', overflow: 'hidden' }}>
+                                {course.imageUrl ? (
+                                    <img src={getImageUrl(course.imageUrl)} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+                                ) : (
+                                    <LandscapeIcon className="placeholder-icon" />
+                                )}
                             </div>
 
                             <div className="card-main-content">

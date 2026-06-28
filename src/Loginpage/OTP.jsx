@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { verifyOTP } from "../services/Api";
 import toast from 'react-hot-toast';
@@ -6,6 +6,11 @@ import "./Logincss.css";
 
 export default function OTP() {
     const [otp, setOtp] = useState(Array(6).fill(""));
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('zumra-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }, []);
     const [isLoading, setIsLoading] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
@@ -59,14 +64,14 @@ export default function OTP() {
 
     return (
         <div className="login-wrapper">
-            <div className="login-card">
-                <div className="login-header">
-                    <div className="logo">
-                        <span className="logo-icon"></span>
+            <div className="login-card-container">
+                <div className="login-card-header">
+                    <Link to="/" className="logo-container">
+                        <span className="logo-icon-dot"></span>
                         <span className="logo-text">ZUMRA</span>
-                    </div>
+                    </Link>
                     <h1>Verify Email</h1>
-                    <p>Enter the 6-digit code sent to <br/><strong>{email || "your email"}</strong></p>
+                    <p>Enter the 6-digit verification code sent to <strong>{email || "your email"}</strong></p>
                 </div>
 
                 <form onSubmit={handleVerify} className="login-form">
@@ -87,15 +92,17 @@ export default function OTP() {
 
                     <button 
                         type="submit" 
-                        className="sign-in-btn" 
+                        className="premium-action-btn" 
                         disabled={isLoading}
-                        style={{ marginTop: '1rem' }}
+                        style={{ marginTop: '1.5rem' }}
                     >
                         {isLoading ? "Verifying..." : "Verify Code"}
                     </button>
                     
-                    <div className="sign-up-prompt">
-                        Didn't receive the code? <Link to="/Forgetpassword">Resend</Link>
+                    <div className="auth-footer-container">
+                        <div className="auth-footer-prompt">
+                            Didn't receive the code? <Link to="/Forgetpassword">Resend</Link>
+                        </div>
                     </div>
                 </form>
             </div>

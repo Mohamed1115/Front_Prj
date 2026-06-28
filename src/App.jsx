@@ -26,6 +26,8 @@ import AllCoursesPage from "./viewpages/AllCoursesPage";
 import MyCoursesPage from "./viewpages/MyCoursesPage";
 import CourseControlPanel from "./viewpages/CourseControlPanel";
 import BatchControlPanel from "./viewpages/BatchControlPanel";
+import AllFacilitiesPage from "./viewpages/AllFacilitiesPage";
+import SearchResultsPage from "./viewpages/SearchResultsPage";
 
 import ChatBot from "./viewpages/ChatBot";
 import { Toaster } from 'react-hot-toast';
@@ -81,6 +83,14 @@ export default function App() {
       <Route
         path="/courses"
         element={<><Navbar /><AllCoursesPage /></>}
+      />
+      <Route
+        path="/facilities"
+        element={<><Navbar /><AllFacilitiesPage /></>}
+      />
+      <Route
+        path="/search"
+        element={<><Navbar /><SearchResultsPage /></>}
       />
       <Route
         path="/my-courses"

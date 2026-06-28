@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "./ProfilePage.css";
+import "./FacilityDashboardPage.css";
 
 // MUI Icons
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -16,9 +17,10 @@ import XIcon from "@mui/icons-material/X";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import toast from "react-hot-toast";
 
-import { getGroups, createGroup, updateGroup, deleteGroup, getAllCourses, createCourse, updateCourse, deleteCourse, getImageUrl } from "../services/Api";
+import { getGroups, createGroup, updateGroup, deleteGroup, getAllCourses, createCourse, updateCourse, deleteCourse, getImageUrl, getFacilityAccess, giveFacilityAccess } from "../services/Api";
 
 export default function FacilitySettingsPage() {
     const { facilityId } = useParams();
@@ -28,7 +30,7 @@ export default function FacilitySettingsPage() {
     // Facility data passed from previous page if any
     const facilityData = location.state?.facility || {};
     
-    const [activeTab, setActiveTab] = useState("overview");
+    const [activeTab, setActiveTab] = useState("general");
 
     // --- Groups State ---
     const [groups, setGroups] = useState([]);
@@ -47,6 +49,50 @@ export default function FacilitySettingsPage() {
     const [isLoadingFacilityCourses, setIsLoadingFacilityCourses] = useState(false);
     const [facilityCourseView, setFacilityCourseView] = useState("list"); // list, add, edit
     const [currentFacilityCourse, setCurrentFacilityCourse] = useState({ id: null, name: "", description: "", cost: 0, type: "", groupId: "", image: null });
+
+    // --- Members Access State ---
+    const [memberEmail, setMemberEmail] = useState("");
+    const [memberRole, setMemberRole] = useState(1); // 1 for Leader, 2 for Instructor
+    const [accessList, setAccessList] = useState([]);
+    const [isLoadingAccess, setIsLoadingAccess] = useState(false);
+    const [isFetchingAccess, setIsFetchingAccess] = useState(true);
+
+    const fetchAccessList = async () => {
+        setIsFetchingAccess(true);
+        try {
+            const data = await getFacilityAccess(facilityId);
+            setAccessList(data || []);
+        } catch (error) {
+            toast.error(error.message || "Failed to load access list");
+        } finally {
+            setIsFetchingAccess(false);
+        }
+    };
+
+    const handleGiveAccess = async (e) => {
+        e.preventDefault();
+        if (!memberEmail.trim()) {
+            toast.error("Please enter a valid email");
+            return;
+        }
+        setIsLoadingAccess(true);
+        try {
+            await giveFacilityAccess(memberEmail, parseInt(facilityId), parseInt(memberRole));
+            toast.success("Access granted successfully");
+            setMemberEmail("");
+            fetchAccessList();
+        } catch (error) {
+            toast.error(error.message || "Failed to grant access");
+        } finally {
+            setIsLoadingAccess(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === "members" && facilityId) {
+            fetchAccessList();
+        }
+    }, [activeTab, facilityId]);
 
     useEffect(() => {
         if (activeTab === "groups" && groupView === "list") {
@@ -227,12 +273,6 @@ export default function FacilitySettingsPage() {
                 <aside className="profile-sidebar">
                     <nav className="sidebar-nav">
                         <button 
-                            className={`sidebar-nav-item ${activeTab === 'overview' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('overview')}
-                        >
-                            <DashboardIcon /> Overview
-                        </button>
-                        <button 
                             className={`sidebar-nav-item ${activeTab === 'general' ? 'active' : ''}`}
                             onClick={() => setActiveTab('general')}
                         >
@@ -256,18 +296,6 @@ export default function FacilitySettingsPage() {
                         >
                             <MenuBookIcon /> Courses
                         </button>
-                        <button 
-                            className={`sidebar-nav-item ${activeTab === 'meetings' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('meetings')}
-                        >
-                            <VideocamIcon /> Live Meetings
-                        </button>
-                        <button 
-                            className={`sidebar-nav-item ${activeTab === 'billing' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('billing')}
-                        >
-                            <PaymentIcon /> Billing & Subscription
-                        </button>
                     </nav>
                 </aside>
 
@@ -275,28 +303,7 @@ export default function FacilitySettingsPage() {
                 <main className="profile-main-content">
                     <div className="profile-content-area">
                         
-                        {/* 1. OVERVIEW TAB */}
-                        {activeTab === 'overview' && (
-                            <div className="tab-pane-profile">
-                                <h3 className="settings-section-title">Dashboard Overview</h3>
-                                <p className="settings-subtitle">At a glance metrics for your facility.</p>
-                                
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '1.5rem' }}>
-                                    <div style={{ background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-                                        <h2 style={{ fontSize: '2rem', margin: '0', color: 'var(--text-primary)' }}>24</h2>
-                                        <p style={{ color: 'var(--text-secondary)', margin: '0.5rem 0 0' }}>Total Members</p>
-                                    </div>
-                                    <div style={{ background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-                                        <h2 style={{ fontSize: '2rem', margin: '0', color: 'var(--text-primary)' }}>5</h2>
-                                        <p style={{ color: 'var(--text-secondary)', margin: '0.5rem 0 0' }}>Active Courses</p>
-                                    </div>
-                                    <div style={{ background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-                                        <h2 style={{ fontSize: '2rem', margin: '0', color: 'var(--text-primary)' }}>12</h2>
-                                        <p style={{ color: 'var(--text-secondary)', margin: '0.5rem 0 0' }}>Live Meetings</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+
 
                         {/* 2. GENERAL SETTINGS TAB */}
                         {activeTab === 'general' && (
@@ -323,19 +330,97 @@ export default function FacilitySettingsPage() {
 
                         {/* 3. MEMBERS TAB */}
                         {activeTab === 'members' && (
-                            <div className="tab-pane-profile">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <h3 className="settings-section-title">Members Management</h3>
-                                        <p className="settings-subtitle">Add or remove facility members and roles.</p>
+                            <div className="tab-pane-profile" style={{ padding: 0 }}>
+                                <div className="fd-content" style={{ padding: 0, maxWidth: 'none' }}>
+                                    <div className="fd-card fd-add-access-card">
+                                        <h2><AddCircleOutlineIcon /> Grant New Access</h2>
+                                        <form className="fd-form" onSubmit={handleGiveAccess}>
+                                            <div className="fd-form-group">
+                                                <label>User Email</label>
+                                                <input 
+                                                    type="email" 
+                                                    placeholder="Enter member's email" 
+                                                    value={memberEmail} 
+                                                    onChange={(e) => setMemberEmail(e.target.value)} 
+                                                    required 
+                                                />
+                                            </div>
+                                            <div className="fd-form-group">
+                                                <label>Role</label>
+                                                <select value={memberRole} onChange={(e) => setMemberRole(e.target.value)}>
+                                                    <option value={1}>Leader</option>
+                                                    <option value={2}>Instructor</option>
+                                                </select>
+                                            </div>
+                                            <div className="fd-form-submit">
+                                                <button type="submit" className="fd-primary-btn" disabled={isLoadingAccess}>
+                                                    {isLoadingAccess ? "Processing..." : "Grant Access"}
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
-                                    <button className="btn-primary" onClick={() => navigate(`/facility-dashboard/${facilityId}`)}>
-                                        Advanced Access
-                                    </button>
-                                </div>
-                                <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)', marginTop: '1rem' }}>
-                                    <GroupIcon style={{ fontSize: 60, color: 'var(--text-muted)' }} />
-                                    <p style={{ color: 'var(--text-secondary)' }}>Member list will be displayed here.</p>
+
+                                    <div className="fd-card fd-access-list-card" style={{ marginTop: '2rem' }}>
+                                        <h2><GroupIcon /> Facility Members</h2>
+                                        {isFetchingAccess ? (
+                                            <p className="fd-loading-text">Loading members...</p>
+                                        ) : accessList.length === 0 ? (
+                                            <div className="fd-empty-state">
+                                                <GroupIcon style={{ fontSize: 60, color: '#9ca3af' }} />
+                                                <p>No members have been added to this facility yet.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="fd-table-container">
+                                                <table className="fd-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>User</th>
+                                                            <th>Role</th>
+                                                            <th>Joined Date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {accessList.map((member, idx) => {
+                                                            const userName = member.userName || member.user || `User #${idx}`;
+                                                            const email = member.email || "";
+                                                            
+                                                            let memberRoleName = "Unknown";
+                                                            if (member.role === 0) memberRoleName = "Super Admin";
+                                                            else if (member.role === 1) memberRoleName = "Leader";
+                                                            else if (member.role === 2) memberRoleName = "Instructor";
+
+                                                            const joinedDateStr = member.createdAt || member.joinedAt;
+                                                            const joinedDate = joinedDateStr ? new Date(joinedDateStr).toLocaleDateString() : "-";
+                                                            
+                                                            const badgeClass = memberRoleName.replace(/\s+/g, '').toLowerCase();
+                                                            
+                                                            return (
+                                                                <tr key={member.id || idx}>
+                                                                    <td>
+                                                                        <div className="fd-user-cell">
+                                                                            <div className="fd-avatar">
+                                                                                {String(userName).charAt(0).toUpperCase()}
+                                                                            </div>
+                                                                            <div>
+                                                                                <div className="fd-email" style={{ fontWeight: 600 }}>{userName}</div>
+                                                                                {email && <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{email}</div>}
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <span className={`fd-badge ${badgeClass}`}>
+                                                                            {memberRoleName}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td>{joinedDate}</td>
+                                                                </tr>
+                                                            )
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -781,36 +866,7 @@ export default function FacilitySettingsPage() {
                             </div>
                         )}
 
-                        {/* 5. MEETINGS TAB */}
-                        {activeTab === 'meetings' && (
-                            <div className="tab-pane-profile">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <h3 className="settings-section-title">Live Meetings</h3>
-                                        <p className="settings-subtitle">Manage scheduled live sessions.</p>
-                                    </div>
-                                    <button className="btn-primary" onClick={() => navigate('/live-meeting-test')}>
-                                        Schedule Meeting
-                                    </button>
-                                </div>
-                                <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)', marginTop: '1rem' }}>
-                                    <VideocamIcon style={{ fontSize: 60, color: 'var(--text-muted)' }} />
-                                    <p style={{ color: 'var(--text-secondary)' }}>Live meetings list will be displayed here.</p>
-                                </div>
-                            </div>
-                        )}
 
-                        {/* 6. BILLING TAB */}
-                        {activeTab === 'billing' && (
-                            <div className="tab-pane-profile">
-                                <h3 className="settings-section-title">Billing & Subscription</h3>
-                                <p className="settings-subtitle">Manage your facility's subscription plan.</p>
-                                <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)', marginTop: '1rem' }}>
-                                    <PaymentIcon style={{ fontSize: 60, color: 'var(--text-muted)' }} />
-                                    <p style={{ color: 'var(--text-secondary)' }}>No active subscription plan found.</p>
-                                </div>
-                            </div>
-                        )}
                         
                     </div>
                 </main>
@@ -829,7 +885,6 @@ export default function FacilitySettingsPage() {
                     <a href="#"><InstagramIcon /></a>
                     <a href="#"><XIcon /></a>
                 </div>
-                <p className="footer-copyright">©Copyrights 2026</p>
             </footer>
         </div>
     );

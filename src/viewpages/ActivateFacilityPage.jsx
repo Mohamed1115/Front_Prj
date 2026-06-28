@@ -335,7 +335,6 @@ function AfpFooter() {
                 <a href="#" className="afp-social-icon"><InstagramIcon /></a>
                 <a href="#" className="afp-social-icon"><XIcon /></a>
             </div>
-            <p className="afp-footer-copyright">©Copyrights 2026</p>
         </footer>
     );
 }

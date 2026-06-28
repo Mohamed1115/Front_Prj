@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllCourses, getAllFacilities, getImageUrl } from "../services/Api";
+import { getAllCourses, getAllFacilities, getImageUrl, getMyEnrollments } from "../services/Api";
 import "./HomePage.css";
 
 // MUI Icons
@@ -15,6 +15,8 @@ import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import XIcon from "@mui/icons-material/X";
+import CloudIcon from "@mui/icons-material/Cloud";
+import VideocamIcon from "@mui/icons-material/Videocam";
 
 // ─── API Data Placeholders ───────────────────────────────────────────
 // We will load popularCourses and facilities via API and store them in state.
@@ -39,11 +41,45 @@ export default function HomePage() {
     const navigate = useNavigate();
     const [popularCourses, setPopularCourses] = useState([]);
     const [facilitiesState, setFacilitiesState] = useState([]);
+    const [showAllFacilities, setShowAllFacilities] = useState(false);
+    const [userName, setUserName] = useState("User");
+    const [bannerIndex, setBannerIndex] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [myLearning, setMyLearning] = useState([]);
+
+    const bannersData = [
+        { id: 1, type: 'blue', tag: 'New Course', title: 'Master Full-Stack', desc: 'Build real-world apps with React & C#', btn: 'Explore Now', icon: SchoolIcon },
+        { id: 2, type: 'orange', tag: 'Trending', title: 'UX/UI Design', desc: 'Create stunning interfaces from scratch', btn: 'Start Learning', icon: LocalFireDepartmentIcon },
+        { id: 3, type: 'green', tag: 'Popular', title: 'Cloud Architecture', desc: 'Deploy scalable apps with AWS & Docker', btn: 'Discover', icon: CloudIcon },
+        { id: 4, type: 'purple', tag: 'Live Classes', title: 'Live Coding Sessions', desc: 'Join expert developers in real-time', btn: 'Join Now', icon: VideocamIcon },
+    ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setBannerIndex((prev) => (prev + 2) % bannersData.length);
+        }, 6000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         async function loadData() {
             try {
+                // Decode token to get username
+                const token = localStorage.getItem("token");
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split(".")[1]));
+                        const email = payload.email || payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || "";
+                        let name = payload.name || payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || payload.unique_name || payload.given_name || email.split("@")[0] || "User";
+                        if (name && name.includes("@")) {
+                            name = name.split("@")[0];
+                        }
+                        setUserName(name);
+                    } catch (e) {
+                        console.error("Error decoding token for username", e);
+                    }
+                }
+
                 setLoading(true);
                 const coursesData = await getAllCourses();
                 const facilitiesData = await getAllFacilities();
@@ -54,6 +90,17 @@ export default function HomePage() {
 
                 setPopularCourses(cArray.slice(0, 4));
                 setFacilitiesState(fArray.slice(0, 3));
+
+                if (token) {
+                    try {
+                        const myRes = await getMyEnrollments();
+                        if (myRes && myRes.success) {
+                            setMyLearning(myRes.data || []);
+                        }
+                    } catch (myErr) {
+                        console.error("Error loading enrollments on HomePage:", myErr);
+                    }
+                }
             } catch (error) {
                 console.error("Failed to load API data on HomePage:", error);
             } finally {
@@ -68,35 +115,24 @@ export default function HomePage() {
             
             {/* ═══ 1. Welcome Section ═══ */}
             <section className="home-section welcome-section">
-                <h2 className="home-welcome-title">Welcome back, Amr!</h2>
-                <div className="welcome-stat-badges">
-                    <div className="stat-badge">
-                        <div className="stat-badge-icon">
-                            <LocalFireDepartmentIcon />
-                        </div>
-                        <div className="stat-badge-info">
-                            <span className="stat-badge-label">Current Streak</span>
-                            <span className="stat-badge-value">🔥🔥</span>
-                        </div>
-                    </div>
-                    <div className="stat-badge">
-                        <div className="stat-badge-icon">
-                            <SchoolIcon />
-                        </div>
-                        <div className="stat-badge-info">
-                            <span className="stat-badge-value"><strong>80</strong> Lessons completed</span>
-                            <span className="stat-badge-value"><strong>150</strong> Minutes spent</span>
-                        </div>
-                    </div>
-                    <div className="stat-badge">
-                        <div className="stat-badge-icon">
-                            <GroupsIcon />
-                        </div>
-                        <div className="stat-badge-info">
-                            <span className="stat-badge-label">Group classes</span>
-                            <span className="stat-badge-value">🏆</span>
-                        </div>
-                    </div>
+                <h2 className="home-welcome-title">Welcome back, {userName}!</h2>
+                <div className="home-banners">
+                    {[bannersData[bannerIndex], bannersData[(bannerIndex + 1) % bannersData.length]].map((banner) => {
+                        const Icon = banner.icon;
+                        return (
+                            <div className={`promo-banner banner-${banner.type}`} key={banner.id} onClick={() => navigate('/courses')}>
+                                <div className="promo-content">
+                                    <span className="promo-tag">{banner.tag}</span>
+                                    <h3>{banner.title}</h3>
+                                    <p>{banner.desc}</p>
+                                    <button className="promo-btn">{banner.btn}</button>
+                                </div>
+                                <div className="promo-icon">
+                                    <Icon style={{ fontSize: 100 }} />
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </section>
 
@@ -113,7 +149,10 @@ export default function HomePage() {
                         <p style={{ padding: "20px" }}>No courses found.</p>
                     ) : popularCourses.map(course => (
                         <div className="popular-card" key={course.id} onClick={() => navigate(`/course/${course.id}`)}>
-                            <div className="pop-card-image">
+                            <div className="pop-card-image" style={{ padding: (course.imageUrl || course.image) ? 0 : '', overflow: 'hidden' }}>
+                                {(course.imageUrl || course.image) && (
+                                    <img src={getImageUrl(course.imageUrl || course.image)} alt={course.name || course.title} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
+                                )}
                                 <div className="pop-play-circle">
                                     <PlayArrowIcon />
                                 </div>
@@ -135,7 +174,7 @@ export default function HomePage() {
                 <div className="facilities-container">
                     <div className="section-header-row">
                         <h2>Facilities</h2>
-                        <button className="see-more-btn light">see more</button>
+                        <button className="see-more-btn light" onClick={() => navigate('/facilities')}>see more</button>
                     </div>
                     <div className="facilities-cards-row">
                         {loading ? (
@@ -164,37 +203,44 @@ export default function HomePage() {
             </section>
 
             {/* ═══ 4. My Learning ═══ */}
-            <section className="home-section my-learning-section">
-                <div className="section-header-row">
-                    <h2>My Learning</h2>
-                    <button className="see-more-btn" onClick={() => navigate('/my-courses')}>see more</button>
-                </div>
-                <div className="learning-cards-row">
-                    {learningCourses.map((course, idx) => (
-                        <div className="learning-card" key={idx} onClick={() => navigate(`/watch/${course.id}`)}>
-                            <div className="lc-image">
-                                <LandscapeIcon />
-                                <div className="lc-play-overlay">
-                                    <PlayCircleIcon />
-                                </div>
-                                {idx === 0 && (
-                                    <div className="lc-badge-overlay">
-                                        <span className="lc-badge-tag">Start Learn</span>
-                                        <span className="lc-badge-sub">(the Future of<br/>eCommerce)</span>
+            {localStorage.getItem("token") && myLearning.length > 0 && (
+                <section className="home-section my-learning-section">
+                    <div className="section-header-row">
+                        <h2>My Learning</h2>
+                        <button className="see-more-btn" onClick={() => navigate('/my-courses')}>see more</button>
+                    </div>
+                    <div className="learning-cards-row">
+                        {myLearning.slice(0, 4).map((course, idx) => {
+                            const imageUrl = getImageUrl(course.courseImage);
+                            return (
+                                <div className="learning-card" key={course.enrollmentId} onClick={() => navigate(`/watch/${course.courseId}`)}>
+                                    <div className="lc-image" style={{ background: imageUrl ? 'none' : `linear-gradient(135deg, #3b82f6, #8b5cf6)` }}>
+                                        {imageUrl ? (
+                                            <img src={imageUrl} alt={course.courseName} className="my-course-img" />
+                                        ) : (
+                                            <div className="lc-play-overlay">
+                                                <PlayCircleIcon />
+                                            </div>
+                                        )}
+                                        {idx === 0 && (
+                                            <div className="lc-badge-overlay">
+                                                <span className="lc-badge-tag">Continue Learning</span>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                            <div className="lc-body">
-                                <h4>{course.title}</h4>
-                                <div className="lc-meta-row">
-                                    <span>{course.author}</span>
-                                    <span>{course.lessons} Lessons</span>
+                                    <div className="lc-body">
+                                        <h4>{course.courseName}</h4>
+                                        <div className="lc-meta-row">
+                                            <span>{course.instructorName || "Instructor"}</span>
+                                            <span>{course.totalLessons || 0} Lessons</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
+                            );
+                        })}
+                    </div>
+                </section>
+            )}
 
 
 
@@ -214,7 +260,6 @@ export default function HomePage() {
                     <a href="#"><InstagramIcon /></a>
                     <a href="#"><XIcon /></a>
                 </div>
-                <p className="footer-copyright">©Copyrights 2026</p>
             </footer>
 
         </div>

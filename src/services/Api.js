@@ -537,6 +537,170 @@ export async function deleteLesson(facilityId, lessonId) {
     return data;
 }
 
+export async function createTask(facilityId, taskData) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true };
+    }
+    const token = localStorage.getItem("token");
+    
+    const formBody = [];
+    for (const property in taskData) {
+        if(taskData[property] !== undefined && taskData[property] !== null) {
+            formBody.push(encodeURIComponent(property) + "=" + encodeURIComponent(taskData[property]));
+        }
+    }
+    const body = formBody.join("&");
+
+    const response = await fetch(`${BASE_URL}/Api/Task/Add/${facilityId}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: body,
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function deleteTask(facilityId, taskId) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Task/Delete/${facilityId}/${taskId}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function submitTask(taskId, submissionUrl) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true, message: "Mock success" };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Task/Submit`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ TaskId: taskId, SubmissionUrl: submissionUrl }),
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function submitTaskOnBehalf(facilityId, taskId, userId, submissionUrl) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true, message: "Mock success" };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Task/SubmitOnBehalf/${facilityId}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ TaskId: taskId, UserId: userId, SubmissionUrl: submissionUrl }),
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function getTaskSubmission(taskId) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true, data: null };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Task/GetSubmission/${taskId}`, {
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function updateTask(facilityId, taskId, taskData) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true };
+    }
+    const token = localStorage.getItem("token");
+    
+    const formBody = [];
+    for (const property in taskData) {
+        if(taskData[property] !== undefined && taskData[property] !== null) {
+            formBody.push(encodeURIComponent(property) + "=" + encodeURIComponent(taskData[property]));
+        }
+    }
+    const body = formBody.join("&");
+
+    const response = await fetch(`${BASE_URL}/Api/Task/Update/${facilityId}/${taskId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: body,
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function getTaskSubmissions(facilityId, taskId) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true, data: [] };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Task/GetTaskSubmissions/${facilityId}/${taskId}`, {
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function getSubmissionsByUser(userId) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true, data: [] };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Task/GetSubmissionsByUser/${userId}`, {
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+
 
 export async function getAllFacilities() {
     if (MOCK_MODE) {
@@ -778,6 +942,178 @@ export async function payForFacility(facilityId) {
     return data;
 }
 
+export async function enrollCourse(batchId) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Order/Enroll/Enroll/${batchId}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (response.status === 409) {
+        // Duplicate enrollment: user already owns or has the course in cart
+        const msg = data?.message || "You already own or have this course in your cart.";
+        throw new Error(msg);
+    }
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function checkCourseEnrollmentStatus(batchId) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true, status: "none" };
+    }
+    const token = localStorage.getItem("token");
+    if (!token) return { success: true, status: "none" };
+    const response = await fetch(`${BASE_URL}/Api/Order/CheckEnrollmentStatus/${batchId}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) return { success: true, status: "none" }; // fallback silently
+    return data; // { success, status: "owned" | "in_cart" | "none" }
+}
+
+export async function getOrderItems() {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return [];
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Order/GetAll`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    // Check if the backend returns the array directly or inside a property
+    return data;
+}
+
+export async function getMyEnrollments() {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return [];
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Course/my-enrollments`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function getBatchMembers(batchId) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return [];
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Order/GetBatchMembers/${batchId}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    const list = data?.data ?? data?.Data ?? data;
+    if (Array.isArray(list)) return list;
+    if (Array.isArray(data.$values)) return data.$values;
+    return [];
+}
+
+export async function getWatchCourseData(courseId) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return null;
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Course/watch/${courseId}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function removeFromOrder(enrollId) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Order/Delete/Enroll/${enrollId}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function payForOrder() {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return 'https://checkout.stripe.com/pay/cs_test_mock';
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Order/Pay`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function confirmOrderSuccess() {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { Message: "Payment success" };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/Order/Success`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
 export async function checkFacilityStatus(id) {
     if (MOCK_MODE) {
         await mockDelay();
@@ -883,6 +1219,146 @@ export async function deleteGroup(facilityId, id) {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+// ─── USER PROFILE API ──────────────────────────────────────────────
+export async function getUserProfile() {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return {
+            email: "Amrmohammedd99@gmail.com",
+            name: "Amr Ahmed",
+            userName: "AmrAhmed",
+            phone: "01099684122",
+            imageUrl: null
+        };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/User`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data?.Data ?? data?.data ?? data;
+}
+
+export async function updateUserProfile(profileData) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/User`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(profileData),
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function changeUserEmail(newEmail) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/User/Email`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ newEmail }),
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function uploadUserAvatar(formData) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true, imageUrl: null };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/User/Image`, {
+        method: "POST",
+        headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function updateUserAvatar(formData) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true, imageUrl: null };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/User/Image`, {
+        method: "PUT",
+        headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function deleteUserAvatar() {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return { success: true };
+    }
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BASE_URL}/Api/User/Image`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    const data = await readBody(response);
+    if (!response.ok) throw new Error(formatErrorMessage(response.status, data));
+    return data;
+}
+
+export async function search(q) {
+    if (MOCK_MODE) {
+        await mockDelay();
+        return {
+            courses: [
+                { id: 1, name: "Premium Drawing Course", description: "Learn painting and drawing", cost: 49, type: "recorded", facilityName: "Art Facility", groupName: "A1" }
+            ],
+            facilities: [
+                { id: 1, name: "Art Academy", description: "Best art facility", type: "Academy", status: "Active", categoryName: "Arts" }
+            ],
+            groups: [
+                { id: 1, name: "Advanced Drawing Group", description: "Group for advanced painters", facilityName: "Art Academy" }
+            ]
+        };
+    }
+    const response = await fetch(`${BASE_URL}/api/Search?q=${encodeURIComponent(q)}`, {
+        headers: { "Content-Type": "application/json" }
     });
     const data = await readBody(response);
     if (!response.ok) throw new Error(formatErrorMessage(response.status, data));

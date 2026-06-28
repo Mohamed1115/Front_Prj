@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { getFacilityById, getGroups, getAllCourses, getImageUrl } from "../services/Api";
 import "./FacilityProfile.css";
 
 // MUI Icons
@@ -14,106 +15,67 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import XIcon from "@mui/icons-material/X";
 
-// ─── Mock Data ───────────────────────────────────────────
-const facilityData = {
-    zumra: {
-        name: "ZUMRA",
-        description:
-            "Our facility is a creative learning hub dedicated to empowering talent across multiple disciplines. We offer a wide range of professional courses — from drawing and design to photography and digital media — all led by experienced instructors and supported by state-of-the-art equipment.",
-    },
-    iti: {
-        name: "ITI",
-        description:
-            "Industrial Training Institute providing hands-on courses. Integrated platforms for course delivery, tracking, and certification management across all disciplines.",
-    },
-    udemy: {
-        name: "Udemy",
-        description:
-            "Global marketplace for learning and instruction. Browse thousands of courses and get hands-on practice with real-world projects and expert instructors.",
-    },
-};
-
-const categories = [
-    {
-        id: 1,
-        name: "Programming",
-        description: "Learn coding, software development, and computer science.",
-        count: 180,
-    },
-    {
-        id: 2,
-        name: "Design",
-        description: "Master graphic design, UI/UX, and creative arts.",
-        count: 120,
-    },
-    {
-        id: 3,
-        name: "Education",
-        description: "Teaching methods, pedagogy, and academic excellence.",
-        count: 90,
-    },
-    {
-        id: 4,
-        name: "Other",
-        description: "Business, marketing, and professional development.",
-        count: 75,
-    },
-];
-
-const mockCourses = [
-    {
-        id: 1,
-        title: "Complete Drawing Course: Ultimate Drawing Art with Pencil",
-        description:
-            "Learn the fundamentals of drawing from scratch and develop your artistic skills step by step. This course covers everything from basic shapes, proportions, and perspective to light, shadow, and color theory — helping you transform simple sketches into professional artworks. Perfect for beginners and aspiring artists who want to build a strong creative foundation.",
-        price: "$250",
-        instructor: "Jane Cooper",
-        rating: 4.0,
-    },
-    {
-        id: 2,
-        title: "Complete Drawing Course: Ultimate Drawing Art with Pencil",
-        description:
-            "Learn the fundamentals of drawing from scratch and develop your artistic skills step by step. This course covers everything from basic shapes, proportions, and perspective to light, shadow, and color theory — helping you transform simple sketches into professional artworks.",
-        price: "$250",
-        instructor: "Jane Cooper",
-        rating: 4.0,
-    },
-    {
-        id: 3,
-        title: "Complete Drawing Course: Ultimate Drawing Art with Pencil",
-        description:
-            "Learn the fundamentals of drawing from scratch and develop your artistic skills step by step. This course covers everything from basic shapes, proportions, and perspective to light, shadow.",
-        price: "$250",
-        instructor: "Jane Cooper",
-        rating: 4.0,
-    },
-    {
-        id: 4,
-        title: "Complete Drawing Course: Ultimate Drawing Art with Pencil",
-        description:
-            "Learn the fundamentals of drawing from scratch and develop your artistic skills step by step. This course covers everything from basic shapes, proportions, and perspective to light.",
-        price: "$250",
-        instructor: "Jane Cooper",
-        rating: 4.0,
-    },
-    {
-        id: 5,
-        title: "Complete Drawing Course: Ultimate Drawing Art with Pencil",
-        description:
-            "This is a full course of drawing from scratch introducing and building your artistic skills step by step. This course covers everything from basic shapes.",
-        price: "$250",
-        instructor: "Jane Cooper",
-        rating: 4.0,
-    },
-];
 
 // ─── Component ───────────────────────────────────────────
 export default function FacilityProfile() {
     const { facilityId } = useParams();
-    const facility = facilityData[facilityId] || facilityData.zumra;
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [facility, setFacility] = useState(null);
+    const [categories, setCategories] = useState([]);
+    const [courses, setCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const [activeTab, setActiveTab] = useState("courses");
     const [selectedCategory, setSelectedCategory] = useState(null);
+
+    useEffect(() => {
+        async function loadData() {
+            try {
+                setLoading(true);
+                const facData = await getFacilityById(facilityId);
+                const facilityObj = facData?.data || facData || null;
+                setFacility(facilityObj);
+
+                const grpsData = await getGroups(facilityId);
+                const grps = Array.isArray(grpsData) ? grpsData : (grpsData?.data || []);
+
+                const allCoursesData = await getAllCourses();
+                const allC = Array.isArray(allCoursesData) ? allCoursesData : (allCoursesData?.data || []);
+                const facCourses = allC.filter(c => String(c.facilityId) === String(facilityId));
+                
+                setCourses(facCourses);
+
+                // Map groups to categories and add count
+                const cats = grps.map(g => {
+                    const count = facCourses.filter(c => String(c.groupId) === String(g.id || g.Id)).length;
+                    return {
+                        id: g.id || g.Id,
+                        name: g.name || g.Name,
+                        description: g.description || g.Description || "Category description",
+                        count: count
+                    };
+                });
+                setCategories(cats);
+
+                // Auto-select group from navigation state if present
+                const passedGroupId = location.state?.selectedGroupId;
+                if (passedGroupId) {
+                    const matchedCat = cats.find(c => String(c.id) === String(passedGroupId));
+                    if (matchedCat) {
+                        setSelectedCategory(matchedCat);
+                        setActiveTab("courses");
+                    }
+                }
+
+            } catch (err) {
+                console.error("Failed to load facility data", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, [facilityId, location.state]);
 
     const handleCategoryClick = (category) => {
         setSelectedCategory(category);
@@ -124,17 +86,31 @@ export default function FacilityProfile() {
         setSelectedCategory(null);
     };
 
+    if (loading) {
+        return <div className="facility-page"><p style={{padding: '2rem'}}>Loading facility data...</p></div>;
+    }
+
+    if (!facility) {
+        return <div className="facility-page"><p style={{padding: '2rem'}}>Facility not found.</p></div>;
+    }
+
+    const facImage = facility.image || facility.Image || facility.imageUrl || facility.ImageUrl || facility.imagePath || facility.ImagePath || facility.logo || facility.Logo || facility.picture || facility.Picture;
+
     return (
         <div className="facility-page">
             {/* ═══ Facility Header ═══ */}
             <section className="facility-header">
                 <div className="facility-header-left">
-                    <div className="facility-header-icon">
-                        <LandscapeIcon style={{ fontSize: 40, color: "#fff" }} />
+                    <div className="facility-header-icon" style={{ padding: facImage ? 0 : '', overflow: 'hidden' }}>
+                        {facImage ? (
+                            <img src={getImageUrl(facImage)} alt={facility.name || facility.Name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                            <LandscapeIcon style={{ fontSize: 40, color: "#fff" }} />
+                        )}
                     </div>
                     <div className="facility-header-info">
                         <div className="facility-header-name-row">
-                            <h1 className="facility-header-name">{facility.name} ⚙</h1>
+                            <h1 className="facility-header-name">{facility.name || facility.Name} ⚙</h1>
                             <div className="facility-header-actions">
                                 <button className="fh-action-btn">
                                     <FavoriteBorderIcon fontSize="small" />
@@ -180,7 +156,7 @@ export default function FacilityProfile() {
                     {activeTab === "courses" && (
                         <CoursesListView
                             categoryName={selectedCategory.name}
-                            courses={mockCourses}
+                            courses={courses.filter(c => String(c.groupId) === String(selectedCategory.id))}
                             onBack={handleBackToCategories}
                         />
                     )}
@@ -188,7 +164,7 @@ export default function FacilityProfile() {
                     {activeTab === "live" && (
                         <CoursesListView
                             categoryName="Live Sessions"
-                            courses={mockCourses}
+                            courses={courses.filter(c => String(c.groupId) === String(selectedCategory.id) && c.type === 'Live')}
                             onBack={handleBackToCategories}
                             isLive
                         />
@@ -209,7 +185,6 @@ export default function FacilityProfile() {
                     <a href="#" className="social-icon"><InstagramIcon /></a>
                     <a href="#" className="social-icon"><XIcon /></a>
                 </div>
-                <p className="footer-copyright">©Copyrights 2026</p>
             </footer>
         </div>
     );
@@ -220,7 +195,7 @@ function CategoriesView({ categories, onCategoryClick }) {
     return (
         <section className="categories-section">
             <div className="categories-label">
-                <h3>Categories</h3>
+                <h3>Groups</h3>
                 <p className="categories-subtitle">Browse by subject area</p>
             </div>
             <div className="categories-grid">
@@ -230,9 +205,6 @@ function CategoriesView({ categories, onCategoryClick }) {
                         key={cat.id}
                         onClick={() => onCategoryClick(cat)}
                     >
-                        <div className="category-card-image">
-                            <LandscapeIcon style={{ fontSize: 36, color: "#9ca3af" }} />
-                        </div>
                         <div className="category-card-body">
                             <h3 className="category-card-name">{cat.name}</h3>
                             <p className="category-card-desc">{cat.description}</p>
@@ -267,19 +239,23 @@ function CoursesListView({ categoryName, courses, onBack, isLive }) {
             </div>
             <div className="courses-list">
                 {courses.map((course) => (
-                    <div className="course-list-card" key={course.id} onClick={() => navigate(`/course/${course.id}`)} style={{ cursor: "pointer" }}>
-                        <div className="course-list-image">
-                            <LandscapeIcon style={{ fontSize: 40, color: "#9ca3af" }} />
+                    <div className="course-list-card" key={course.id || course.Id} onClick={() => navigate(`/course/${course.id || course.Id}`)} style={{ cursor: "pointer" }}>
+                        <div className="course-list-image" style={{ padding: (course.imageUrl || course.image || course.ImageUrl || course.Image) ? 0 : '', overflow: 'hidden' }}>
+                            {(course.imageUrl || course.image || course.ImageUrl || course.Image) ? (
+                                <img src={getImageUrl(course.imageUrl || course.image || course.ImageUrl || course.Image)} alt={course.name || course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                <LandscapeIcon style={{ fontSize: 40, color: "#9ca3af" }} />
+                            )}
                         </div>
                         <div className="course-list-content">
-                            <h3 className="course-list-title">{course.title}</h3>
-                            <p className="course-list-desc">{course.description}</p>
+                            <h3 className="course-list-title">{course.name || course.title || course.Name}</h3>
+                            <p className="course-list-desc">{course.description || course.Description}</p>
                             <div className="course-list-badges">
                                 <div className="clb-item">
                                     <div className="clb-icon">
                                         <StarBorderIcon style={{ fontSize: 16 }} />
                                     </div>
-                                    <span>{course.rating}</span>
+                                    <span>{course.rating || "4.0"}</span>
                                 </div>
                                 <div className="clb-item">
                                     <div className="clb-icon">
@@ -290,14 +266,14 @@ function CoursesListView({ categoryName, courses, onBack, isLive }) {
                                     <div className="clb-icon">
                                         <PersonOutlineIcon style={{ fontSize: 16 }} />
                                     </div>
-                                    <span>{course.instructor}</span>
+                                    <span>{course.instructor || "Instructor"}</span>
                                 </div>
                             </div>
                         </div>
                         <div className="course-list-actions">
                             <div className="cla-top-row">
-                                <span className="cla-add-to-cart">Add to Card</span>
-                                <span className="cla-price">{course.price}</span>
+                                <span className="cla-add-to-cart">Add to Cart</span>
+                                <span className="cla-price">{(course.cost || course.price || course.Cost || course.Price) ? `$${course.cost || course.price || course.Cost || course.Price}` : "Free"}</span>
                             </div>
                             <button className="cla-buy-btn">Buy now</button>
                         </div>

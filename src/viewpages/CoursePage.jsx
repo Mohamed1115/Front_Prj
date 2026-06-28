@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getCourseById } from "../services/Api";
+import { getCourseById, getFacilityById, getBatchSections, getImageUrl, enrollCourse, checkCourseEnrollmentStatus } from "../services/Api";
 import "./CoursePage.css";
 
 // MUI Icons
 import LandscapeIcon from "@mui/icons-material/Landscape";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -25,6 +26,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import XIcon from "@mui/icons-material/X";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 
 // ─── Mock Data Fallback ───────────────────────────────────────────
 const mockCourseData = {
@@ -105,20 +107,50 @@ const mockCourseData = {
 export default function CoursePage() {
     const { courseId } = useParams();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState("overview");
+    const [activeTab, setActiveTab] = useState("content");
     const [openSections, setOpenSections] = useState([0]);
     const [openFaqs, setOpenFaqs] = useState([]);
     const [userRating, setUserRating] = useState(0);
+    const [isFavorite, setIsFavorite] = useState(false);
 
     const [apiCourse, setApiCourse] = useState(null);
+    const [apiFacility, setApiFacility] = useState(null);
+    const [apiSections, setApiSections] = useState(null);
     const [loading, setLoading] = useState(true);
+    // "none" | "in_cart" | "owned"
+    const [enrollmentStatus, setEnrollmentStatus] = useState("none");
+    const [enrollStatusLoading, setEnrollStatusLoading] = useState(false);
 
     useEffect(() => {
         async function fetchCourse() {
             try {
                 setLoading(true);
                 const data = await getCourseById(courseId);
-                setApiCourse(Array.isArray(data) ? data[0] : (data?.data || data));
+                const cData = Array.isArray(data) ? data[0] : (data?.data || data);
+                setApiCourse(cData);
+
+                if (cData?.facilityId) {
+                    const facData = await getFacilityById(cData.facilityId);
+                    setApiFacility(facData?.data || facData);
+                }
+
+                if (cData?.courseBatches?.length > 0) {
+                    const bId = cData.courseBatches[0].id || cData.courseBatches[0].Id;
+                    const secData = await getBatchSections(bId);
+                    setApiSections(secData?.data || secData);
+
+                    // Check enrollment status for this batch
+                    try {
+                        setEnrollStatusLoading(true);
+                        const statusRes = await checkCourseEnrollmentStatus(bId);
+                        setEnrollmentStatus(statusRes?.status || "none");
+                    } catch {
+                        setEnrollmentStatus("none");
+                    } finally {
+                        setEnrollStatusLoading(false);
+                    }
+                }
+
             } catch (error) {
                 console.error("Failed to load course:", error);
             } finally {
@@ -135,11 +167,46 @@ export default function CoursePage() {
     // Merge API data with mock variables to prevent UI from breaking
     const courseData = apiCourse ? {
         ...mockCourseData,
-        title: apiCourse.title || apiCourse.name || mockCourseData.title,
-        subtitle: apiCourse.description || apiCourse.subtitle || mockCourseData.subtitle,
-        price: apiCourse.price ? `$${apiCourse.price}` : mockCourseData.price,
+        title: apiCourse.title || apiCourse.name || apiCourse.Name || mockCourseData.title,
+        subtitle: apiCourse.description || apiCourse.subtitle || apiCourse.Description || mockCourseData.subtitle,
+        price: (apiCourse.cost || apiCourse.price || apiCourse.Cost) ? `$${apiCourse.cost || apiCourse.price || apiCourse.Cost}` : mockCourseData.price,
+        oldPrice: apiCourse.oldPrice ? `$${apiCourse.oldPrice}` : mockCourseData.oldPrice,
         instructor: apiCourse.instructorName || apiCourse.instructor || mockCourseData.instructor,
+        imageUrl: apiCourse.imageUrl || apiCourse.image || apiCourse.ImageUrl || apiCourse.Image,
+        facility: apiFacility ? {
+            ...mockCourseData.facility,
+            name: apiFacility.name || apiFacility.Name || mockCourseData.facility.name,
+            description: apiFacility.description || apiFacility.Description || mockCourseData.facility.description,
+        } : mockCourseData.facility,
+        sections: apiSections && Array.isArray(apiSections) && apiSections.length > 0 ? apiSections.map(s => ({
+            title: s.name || s.Name || "Section",
+            items: (s.contents || s.Contents || []).map(item => {
+                const isLesson = item.type === 'Lesson' || item.Type === 'Lesson';
+                if (isLesson) {
+                    return {
+                        id: item.lesson?.id || item.lesson?.Id,
+                        type: 'Lesson',
+                        name: item.lesson?.name || item.lesson?.Name || `Lesson ${item.order || item.Order}`,
+                        duration: item.lesson?.rec?.duration ? `${Math.round(item.lesson.rec.duration / 60)}m` : "05:00"
+                    };
+                } else {
+                    return {
+                        id: item.task?.id || item.task?.Id,
+                        type: 'Task',
+                        name: item.task?.title || item.task?.Title || `Task ${item.order || item.Order}`,
+                        taskType: item.task?.type || item.task?.Type,
+                        deadline: item.task?.deadline || item.task?.Deadline
+                    };
+                }
+            })
+        })) : mockCourseData.sections.map(s => ({
+            title: s.title,
+            items: s.lessons.map(l => ({ ...l, type: 'Lesson' }))
+        })),
     } : mockCourseData;
+
+    const totalLessons = courseData.sections ? courseData.sections.reduce((acc, s) => acc + (s.items || []).filter(i => i.type === 'Lesson').length, 0) : 0;
+    const totalTasks = courseData.sections ? courseData.sections.reduce((acc, s) => acc + (s.items || []).filter(i => i.type === 'Task').length, 0) : 0;
 
     const toggleSection = (idx) => {
         setOpenSections((prev) =>
@@ -154,12 +221,8 @@ export default function CoursePage() {
     };
 
     const tabs = [
-        { id: "overview", label: "Overview" },
         { id: "content", label: "Course content" },
         { id: "facility", label: "Facility" },
-        { id: "instructor", label: "Instructor" },
-        { id: "faq", label: "FAQ" },
-        { id: "reviews", label: "Reviews" },
     ];
 
     const scrollToSection = (tabId) => {
@@ -176,6 +239,80 @@ export default function CoursePage() {
         certificate: <WorkspacePremiumIcon fontSize="small" />,
     };
 
+    const addToCart = async () => {
+        try {
+            // Guard: if already owned or in cart, don't proceed
+            if (enrollmentStatus === "owned") {
+                navigate(`/watch/${courseId}`);
+                return;
+            }
+            if (enrollmentStatus === "in_cart") {
+                navigate('/checkout');
+                return;
+            }
+
+            // Debug: log what we have
+            console.log("=== ADD TO CART DEBUG ===");
+            console.log("apiCourse:", JSON.stringify(apiCourse, null, 2));
+            console.log("courseId param:", courseId);
+            
+            // Backend requires batchId, not courseId
+            const batchId = apiCourse?.courseBatches?.[0]?.id 
+                         || apiCourse?.courseBatches?.[0]?.Id
+                         || apiCourse?.CourseBatches?.[0]?.id
+                         || apiCourse?.CourseBatches?.[0]?.Id
+                         || apiCourse?.batchId
+                         || apiCourse?.BatchId;
+            
+            if (!batchId) {
+                alert("لا يوجد Batch لهذا الكورس. في حالة وجود مشكلة تواصل مع الإدارة.");
+                return;
+            }
+
+            await enrollCourse(batchId);
+            setEnrollmentStatus("in_cart");
+            navigate('/checkout');
+        } catch (error) {
+            console.error("Failed to enroll/add to cart:", error);
+            // Handle the case where user already has course (409 from backend)
+            const msg = error.message?.toLowerCase() || "";
+            if (msg.includes("already owns") || msg.includes("already has")) {
+                setEnrollmentStatus(msg.includes("owns") ? "owned" : "in_cart");
+                alert(error.message);
+            } else {
+                alert("حدث خطأ أثناء الإضافة للسلة: " + error.message);
+            }
+        }
+    };
+
+    useEffect(() => {
+        const favs = JSON.parse(localStorage.getItem('favoriteCourses') || '[]');
+        const isFav = favs.some(c => c.id === (courseData.id || courseId));
+        setIsFavorite(isFav);
+    }, [courseData.id, courseId]);
+
+    const toggleFavorite = () => {
+        const favs = JSON.parse(localStorage.getItem('favoriteCourses') || '[]');
+        const currentId = courseData.id || courseId;
+        
+        if (isFavorite) {
+            const newFavs = favs.filter(c => c.id !== currentId);
+            localStorage.setItem('favoriteCourses', JSON.stringify(newFavs));
+            setIsFavorite(false);
+        } else {
+            const courseToAdd = {
+                id: currentId,
+                title: courseData.title,
+                description: courseData.subtitle,
+                price: courseData.price,
+                imageUrl: courseData.imageUrl || null
+            };
+            favs.push(courseToAdd);
+            localStorage.setItem('favoriteCourses', JSON.stringify(favs));
+            setIsFavorite(true);
+        }
+    };
+
     return (
         <div className="course-page">
             {loading ? (
@@ -189,12 +326,9 @@ export default function CoursePage() {
                 <div className="hero-content-wrapper">
                     <div className="hero-left">
                         <div className="course-breadcrumb">
-                            Courses {">"} Drawing {">"} Complete Drawing Course
+                            Courses {">"} {courseData.title}
                         </div>
-                        <div className="hero-meta-top">
-                            <span>Created by <span className="hero-instructor-badge">{courseData.instructor}</span></span>
-                            <span className="hero-language">🌍 Language {courseData.language}</span>
-                        </div>
+
                         <h1 className="hero-title">{courseData.title}</h1>
                         <p className="hero-subtitle">{courseData.subtitle}</p>
                         
@@ -213,8 +347,12 @@ export default function CoursePage() {
 
                     {/* ═══ Floating Checkout Card ═══ */}
                     <div className="floating-checkout-card">
-                        <div className="fcc-video-preview" onClick={() => navigate(`/watch/1`)}>
-                            <LandscapeIcon />
+                        <div className="fcc-video-preview" onClick={() => navigate(`/watch/1`)} style={{ padding: courseData.imageUrl ? 0 : '', overflow: 'hidden' }}>
+                            {courseData.imageUrl ? (
+                                <img src={getImageUrl(courseData.imageUrl)} alt={courseData.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                <LandscapeIcon />
+                            )}
                             <div className="fcc-video-overlay">
                                 <PlayCircleOutlineIcon />
                             </div>
@@ -222,27 +360,86 @@ export default function CoursePage() {
                         <div className="fcc-body">
                             <div className="fcc-price-row">
                                 <span className="fcc-price">{courseData.price}</span>
-                                <span className="fcc-old-price">{courseData.oldPrice}</span>
                             </div>
+
+                            {/* Enrollment status banner */}
+                            {enrollmentStatus === "owned" && (
+                                <div style={{
+                                    background: "#f0fdf4",
+                                    border: "1px solid #86efac",
+                                    borderRadius: "10px",
+                                    padding: "10px 14px",
+                                    marginBottom: "12px",
+                                    color: "#166534",
+                                    fontSize: "0.85rem",
+                                    fontWeight: "600",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px"
+                                }}>
+                                    ✅ أنت مشترك بالفعل في هذا الكورس
+                                </div>
+                            )}
+                            {enrollmentStatus === "in_cart" && (
+                                <div style={{
+                                    background: "#fffbeb",
+                                    border: "1px solid #fcd34d",
+                                    borderRadius: "10px",
+                                    padding: "10px 14px",
+                                    marginBottom: "12px",
+                                    color: "#92400e",
+                                    fontSize: "0.85rem",
+                                    fontWeight: "600",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px"
+                                }}>
+                                    🛒 هذا الكورس موجود في سلة المشتريات
+                                </div>
+                            )}
+
                             <div className="fcc-actions">
-                                <div className="fcc-row-btns">
-                                    <button className="fcc-add-btn" onClick={() => navigate('/checkout')}>Add to Cart</button>
-                                    <button className="fcc-heart-btn"><FavoriteBorderIcon /></button>
-                                </div>
-                                <button className="fcc-buy-btn" onClick={() => navigate('/checkout')}>Buy now</button>
-                            </div>
-                            
-                            <div className="fcc-includes">
-                                <h4>This course includes:</h4>
-                                <div className="fcc-include-list">
-                                    {courseData.courseIncludes.map((item, i) => (
-                                        <div className="fcc-include-item" key={i}>
-                                            {includeIcons[item.icon]}
-                                            <span>{item.text}</span>
+                                {enrollmentStatus === "owned" ? (
+                                    <button
+                                        className="fcc-buy-btn"
+                                        onClick={() => navigate(`/watch/${courseId}`)}
+                                        style={{ width: "100%" }}
+                                    >
+                                        🎓 Go to Course
+                                    </button>
+                                ) : enrollmentStatus === "in_cart" ? (
+                                    <button
+                                        className="fcc-buy-btn"
+                                        onClick={() => navigate('/checkout')}
+                                        style={{ width: "100%" }}
+                                    >
+                                        🛒 View Cart
+                                    </button>
+                                ) : (
+                                    <div className="fcc-row-btns" style={{ flexDirection: "column", gap: "8px" }}>
+                                        <div style={{ display: "flex", gap: "8px" }}>
+                                            <button
+                                                className="fcc-add-btn"
+                                                onClick={addToCart}
+                                                disabled={enrollStatusLoading}
+                                            >
+                                                {enrollStatusLoading ? "..." : "Add to Cart"}
+                                            </button>
+                                            <button className="fcc-heart-btn" onClick={toggleFavorite}>
+                                                {isFavorite ? <FavoriteIcon style={{ color: "#ef4444" }} /> : <FavoriteBorderIcon />}
+                                            </button>
                                         </div>
-                                    ))}
-                                </div>
+                                        <button
+                                            className="fcc-buy-btn"
+                                            onClick={addToCart}
+                                            disabled={enrollStatusLoading}
+                                        >
+                                            Buy now
+                                        </button>
+                                    </div>
+                                )}
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -252,18 +449,7 @@ export default function CoursePage() {
             <div className="course-main-layout">
                 <div className="course-left-column">
                     
-                    {/* What you'll learn */}
-                    <section id="section-overview" className="learn-section">
-                        <h2 className="section-heading">What you'll learn</h2>
-                        <div className="learn-grid">
-                            {courseData.whatYouLearn.map((item, i) => (
-                                <div className="learn-item" key={i}>
-                                    <CheckCircleOutlineIcon className="learn-check" fontSize="small" />
-                                    <span>{item}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
+
 
                     {/* Course Content Accordion */}
                     <section id="section-content">
@@ -271,10 +457,9 @@ export default function CoursePage() {
                             <div>
                                 <h2 className="section-heading" style={{ marginBottom: 4 }}>Course content</h2>
                                 <p className="content-meta">
-                                    {courseData.sections.length} sections • 25 lectures • 2h 17m total length
+                                    {courseData.sections.length} sections • {totalLessons} lectures {totalTasks > 0 ? `• ${totalTasks} tasks` : ''}
                                 </p>
                             </div>
-                            <button className="expand-all-btn">Expand all sections</button>
                         </div>
                         <div className="accordion-list">
                             {courseData.sections.map((section, idx) => (
@@ -288,13 +473,30 @@ export default function CoursePage() {
                                     </button>
                                     {openSections.includes(idx) && (
                                         <div className="accordion-body">
-                                            {section.lessons.map((lesson, li) => (
+                                            {(section.items || []).map((item, li) => (
                                                 <div className="lesson-row" key={li}>
                                                     <div className="lesson-left">
-                                                        <VideoLibraryIcon className="lesson-icon" fontSize="small" />
-                                                        <span>{lesson.name}</span>
+                                                        {item.type === 'Task' ? (
+                                                            <AssignmentIcon className="lesson-icon" fontSize="small" />
+                                                        ) : (
+                                                            <VideoLibraryIcon className="lesson-icon" fontSize="small" />
+                                                        )}
+                                                        <span>{item.name}</span>
+                                                        {item.type === 'Task' && (
+                                                            <span style={{
+                                                                fontSize: '0.75rem',
+                                                                padding: '2px 8px',
+                                                                borderRadius: '12px',
+                                                                border: '1px solid var(--btn-primary-bg, #1a1a1a)',
+                                                                color: 'var(--btn-primary-bg, #1a1a1a)',
+                                                                marginLeft: '8px',
+                                                                fontWeight: '600',
+                                                                display: 'inline-block'
+                                                            }}>
+                                                                Task {item.taskType ? `(${item.taskType})` : ''}
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                    <span className="lesson-duration">{lesson.duration}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -315,102 +517,12 @@ export default function CoursePage() {
                                 <h3 className="info-name">{courseData.facility.name}</h3>
                                 <p className="info-title">Creative learning platform empowering you to learn</p>
                                 <p className="info-desc">{courseData.facility.description}</p>
-                                <div className="info-stats">
-                                    <div className="info-stat"><RateReviewIcon fontSize="small" /> {courseData.facility.reviews.toLocaleString()} Reviews</div>
-                                    <div className="info-stat"><StarIcon fontSize="small" style={{color: '#f59e0b'}} /> {courseData.facility.rating} Rating</div>
-                                    <div className="info-stat"><PeopleIcon fontSize="small" /> {courseData.facility.students.toLocaleString()} Students</div>
-                                    <div className="info-stat"><MenuBookIcon fontSize="small" /> {courseData.facility.courses} Courses</div>
-                                </div>
+
                             </div>
                         </div>
                     </section>
 
-                    {/* Instructor */}
-                    <section id="section-instructor">
-                        <h2 className="section-heading">Instructor</h2>
-                        <div className="info-card">
-                            <div className="info-avatar-box" style={{ borderRadius: '50%' }}>
-                                <LandscapeIcon />
-                            </div>
-                            <div className="info-content">
-                                <h3 className="info-name">{courseData.instructorInfo.name}</h3>
-                                <p className="info-title">{courseData.instructorInfo.title}</p>
-                                <p className="info-desc">{courseData.instructorInfo.bio}</p>
-                                <div className="info-stats">
-                                    <div className="info-stat"><RateReviewIcon fontSize="small" /> {courseData.instructorInfo.reviews.toLocaleString()} Reviews</div>
-                                    <div className="info-stat"><StarIcon fontSize="small" style={{color: '#f59e0b'}} /> {courseData.instructorInfo.rating} Rating</div>
-                                    <div className="info-stat"><PeopleIcon fontSize="small" /> {courseData.instructorInfo.students.toLocaleString()} Students</div>
-                                    <div className="info-stat"><MenuBookIcon fontSize="small" /> {courseData.instructorInfo.courses} Courses</div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
 
-                    {/* FAQ */}
-                    <section id="section-faq">
-                        <h2 className="section-heading">FAQ</h2>
-                        <div className="faq-list">
-                            {courseData.faqs.map((faq, idx) => (
-                                <div className="faq-item" key={idx}>
-                                    <button
-                                        className="faq-question"
-                                        onClick={() => toggleFaq(idx)}
-                                    >
-                                        <span>{faq.question}</span>
-                                        {openFaqs.includes(idx) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                                    </button>
-                                    {openFaqs.includes(idx) && (
-                                        <div className="faq-answer">{faq.answer}</div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    {/* Reviews */}
-                    <section id="section-reviews">
-                        <h2 className="section-heading">Reviews</h2>
-                        
-                        <div className="review-input-box">
-                            <div className="review-input-header">Tell us your review..</div>
-                            <div className="review-textarea-row">
-                                <textarea placeholder="Write your feedback..." />
-                                <button className="send-review-btn">Send</button>
-                            </div>
-                            <div className="star-rating-input">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <span key={star} onClick={() => setUserRating(star)} style={{ cursor: "pointer" }}>
-                                        {star <= userRating ? (
-                                            <StarIcon style={{ color: "#f59e0b" }} />
-                                        ) : (
-                                            <StarBorderIcon style={{ color: "#d1d5db" }} />
-                                        )}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="reviews-list">
-                            {courseData.reviews.map((review, idx) => (
-                                <div className="review-card" key={idx}>
-                                    <AccountCircleIcon className="review-avatar" />
-                                    <div className="review-content">
-                                        <h4 className="review-name">{review.name}</h4>
-                                        <div className="review-rating">
-                                            {[...Array(5)].map((_, i) => (
-                                                <StarIcon 
-                                                    key={i} 
-                                                    fontSize="small"
-                                                    style={{ color: i < review.rating ? "#f59e0b" : "#e5e7eb", fontSize: '16px' }} 
-                                                />
-                                            ))}
-                                        </div>
-                                        <p className="review-text">"{review.text}"</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
 
                 </div>
                 
@@ -431,7 +543,6 @@ export default function CoursePage() {
                     <a href="#" className="social-icon"><InstagramIcon /></a>
                     <a href="#" className="social-icon"><XIcon /></a>
                 </div>
-                <p className="footer-copyright">©Copyrights 2026</p>
             </footer>
             </>
             )}

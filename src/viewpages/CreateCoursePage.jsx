@@ -333,7 +333,6 @@ export default function CreateCoursePage() {
                     <a href="#" className="social-icon"><InstagramIcon /></a>
                     <a href="#" className="social-icon"><XIcon /></a>
                 </div>
-                <p className="footer-copyright">©Copyrights 2026</p>
             </footer>
         </div>
     );

@@ -25,7 +25,7 @@ import LandscapeIcon from "@mui/icons-material/Landscape";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { getAllCategories } from "../services/Api";
+import { getAllCategories, getUserProfile, getImageUrl } from "../services/Api";
 import "./Pages1.css";
 
 // Helper to decode JWT token
@@ -93,14 +93,30 @@ export default function Navbar() {
         const token = localStorage.getItem("token");
         if (token) {
             const payload = getTokenPayload(token);
+            let email = "";
+            let name = "User";
             if (payload) {
-                // Try to extract useful info from token claims
-                const email = payload.email || payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || payload.sub || "User";
-                const name = payload.name || payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || email.split("@")[0] || "User";
-                setUser({ name, email });
-            } else {
-                setUser({ name: "User" });
+                email = payload.email || payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || payload.sub || "User";
+                name = payload.name || payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || email.split("@")[0] || "User";
             }
+            setUser({ name, email, imageUrl: null });
+
+            // Fetch real user details including Avatar image
+            async function fetchNavbarUser() {
+                try {
+                    const data = await getUserProfile();
+                    if (data) {
+                        setUser({
+                            name: data.name || data.Name || name,
+                            email: data.email || data.Email || email,
+                            imageUrl: data.imageUrl || data.ImageUrl || null
+                        });
+                    }
+                } catch (error) {
+                    console.error("Failed to load user profile in navbar:", error);
+                }
+            }
+            fetchNavbarUser();
         }
     }, []);
 
@@ -128,158 +144,134 @@ export default function Navbar() {
         { id: 2, title: "Complete Drawing Course: Ultimate Drawing Art with Pencil", desc: "Learn the fundamentals of drawing from scratch and develop your artistic skills step by step. This course covers everything from basic shapes, proportions, and perspective to light, shadow, and color theory — helping you transform simple sketches into professional artworks. Perfect for beginners and aspiring artists who want to build a strong creative foundation." },
     ];
 
-    return (
-        <header>
-            <div className="nav-container">
-                {/* Logo */}
-                <ul className="nav">
-                    <li className="li1" onClick={() => navigate('/home')} style={{ cursor: 'pointer' }}>
-                        ZUMRA
-                    </li>
-                </ul>
+    const [searchQuery, setSearchQuery] = useState("");
 
-                {/* Categories Button */}
-                <Button
-                    variant="outlined"
-                    onClick={handleOpen}
-                    endIcon={<KeyboardArrowDownIcon />}
-                    sx={{
-                        color: 'var(--nav-text)',
-                        borderColor: 'var(--nav-cat-border)',
-                        borderRadius: '20px',
-                        textTransform: 'none',
-                        fontSize: '0.85rem',
-                        px: 2.5,
-                        '&:hover': {
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
+
+    return (
+        <header style={{ padding: "12px 30px" }}>
+            <div className="nav-container">
+                {/* Left Section: Logo & Categories */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                    <div
+                        onClick={() => navigate('/home')}
+                        style={{
+                            cursor: 'pointer',
+                            fontSize: '24px',
+                            fontWeight: 900,
+                            letterSpacing: '0.5px',
+                            color: 'var(--nav-text, white)',
+                            fontFamily: 'system-ui, sans-serif'
+                        }}
+                    >
+                        ZUMRA
+                    </div>
+
+                    {/* Categories Button */}
+                    <Button
+                        variant="outlined"
+                        onClick={handleOpen}
+                        endIcon={<KeyboardArrowDownIcon />}
+                        sx={{
+                            color: 'var(--nav-text)',
                             borderColor: 'var(--nav-cat-border)',
-                            background: 'var(--nav-cat-hover)',
+                            borderRadius: '20px',
+                            textTransform: 'none',
+                            fontSize: '0.85rem',
+                            height: '38px',
+                            px: 2.5,
+                            '&:hover': {
+                                borderColor: 'var(--nav-cat-border)',
+                                background: 'var(--nav-cat-hover)',
+                            }
+                        }}
+                    >
+                        Categories
+                    </Button>
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleClose}
+                        sx={{ mt: 1 }}
+                    >
+                        {categories.length > 0 ? (
+                            categories.map((cat, idx) => (
+                                <MenuItem key={cat.id || cat.Id || idx} onClick={() => {
+                                    handleClose();
+                                    navigate('/courses', { state: { categoryId: cat.id || cat.Id, categoryName: cat.name || cat.Name } });
+                                }}>
+                                    {cat.name || cat.Name}
+                                </MenuItem>
+                            ))
+                        ) : (
+                            <MenuItem disabled>Loading...</MenuItem>
+                        )}
+                    </Menu>
+                </div>
+
+                {/* Center Section: Search Bar */}
+                <Paper
+                    component="form"
+                    onSubmit={handleSearchSubmit}
+                    sx={{
+                        p: "2px 14px",
+                        display: "flex",
+                        alignItems: "center",
+                        flex: 1,
+                        maxWidth: 1000,
+                        mx: 4,
+                        height: 44,
+                        borderRadius: '22px',
+                        bgcolor: 'var(--nav-search-bg)',
+                        border: '1px solid var(--nav-border)',
+                        boxShadow: 'none',
+                        transition: 'all 0.25s ease',
+                        '&:focus-within': {
+                            borderColor: 'var(--primary, #7c3aed)',
+                            boxShadow: '0 0 0 2px rgba(124, 58, 237, 0.2)',
+                            bgcolor: 'rgba(255, 255, 255, 0.98)',
                         }
                     }}
                 >
-                    Categories
-                </Button>
-                <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleClose}
-                    sx={{ mt: 1 }}
-                >
-                    {categories.length > 0 ? (
-                        categories.map((cat, idx) => (
-                            <MenuItem key={cat.id || cat.Id || idx} onClick={() => {
-                                handleClose();
-                                navigate('/courses'); // Or wherever categories lead
-                            }}>
-                                {cat.name || cat.Name}
-                            </MenuItem>
-                        ))
-                    ) : (
-                        <MenuItem disabled>Loading...</MenuItem>
-                    )}
-                </Menu>
-
-                {/* Search Bar */}
-                <Paper
-                    component="form"
-                    sx={{
-                        p: "2px 4px",
-                        display: "flex",
-                        alignItems: "center",
-                        width: 400,
-                        borderRadius: 5,
-                        bgcolor: 'var(--nav-search-bg)',
-                        boxShadow: 'none',
-                    }}
-                >
-                    <IconButton type="button" sx={{ p: '6px' }}>
+                    <IconButton type="submit" sx={{ p: '4px', color: 'var(--nav-search-text)' }} aria-label="search">
                         <SearchIcon />
                     </IconButton>
-                    <InputBase sx={{ ml: 0, flex: 1 }} placeholder="Search.." />
+                    <InputBase
+                        sx={{
+                            ml: 1,
+                            flex: 1,
+                            color: 'var(--nav-search-text)',
+                            fontSize: '0.92rem',
+                            '& input::placeholder': {
+                                color: 'var(--nav-search-text)',
+                                opacity: 0.65
+                            }
+                        }}
+                        placeholder="Search courses and facilities..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </Paper>
 
-                {/* Right Icons */}
-                <div className="icon">
-                    {/* Theme Toggle */}
-                    <div className="theme-toggle-group">
-                        {themeOptions.map(t => (
-                            <button
-                                key={t.id}
-                                className={`theme-dot ${theme === t.id ? 'active' : ''}`}
-                                style={{ background: t.color }}
-                                onClick={() => setTheme(t.id)}
-                                title={t.id + ' theme'}
-                            />
-                        ))}
-                    </div>
+                {/* Right Section: Icons */}
+                <div className="icon" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
 
                     <FavoriteBorderIcon
                         onClick={() => navigate('/Favoritepage')}
                         style={{ cursor: "pointer", color: 'var(--nav-icon-color)' }}
                     />
 
-                    {/* Cart wrapper with overlay */}
-                    <div className="nav-cart-wrapper" ref={cartRef}>
+                    {/* Cart wrapper: clicking the icon goes directly to checkout */}
+                    <div className="nav-cart-wrapper">
                         <ShoppingCartOutlinedIcon
-                            onClick={() => setIsCartOpen(!isCartOpen)}
+                            onClick={() => navigate('/checkout')}
                             style={{ cursor: "pointer" }}
                         />
-
-                        {isCartOpen && (
-                            <div className="cart-overlay-dropdown" style={{ zIndex: 1000 }}>
-                                <div className="cart-overlay-items">
-                                    {cartItems.map((item, idx) => (
-                                        <div className="cart-overlay-card" key={idx}>
-                                            <div className="coc-image">
-                                                <LandscapeIcon />
-                                            </div>
-                                            <div className="coc-content">
-                                                <h4>{item.title}</h4>
-                                                <p>{item.desc}</p>
-
-                                                <div className="coc-tags">
-                                                    <div className="coc-tag-item">
-                                                        <div className="coc-icon-circle"><StarBorderIcon style={{ fontSize: 18 }} /></div>
-                                                        <div className="coc-tag-text">
-                                                            <span>Ratings 4.0</span>
-                                                            <small>(13 ratings) 108 students</small>
-                                                        </div>
-                                                    </div>
-                                                    <div className="coc-tag-item">
-                                                        <div className="coc-icon-circle"><IosShareIcon style={{ fontSize: 16 }} /></div>
-                                                        <span className="coc-tag-label">Share</span>
-                                                    </div>
-                                                    <div className="coc-tag-item">
-                                                        <div className="coc-icon-circle"><ApartmentIcon style={{ fontSize: 16 }} /></div>
-                                                        <span className="coc-tag-label">Zumra</span>
-                                                    </div>
-                                                    <div className="coc-tag-item">
-                                                        <div className="coc-icon-circle"><PersonOutlineIcon style={{ fontSize: 18 }} /></div>
-                                                        <span className="coc-tag-label">Jane Cooper</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button className="coc-delete-btn">
-                                                <DeleteOutlineIcon fontSize="small" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="cart-overlay-actions">
-                                    <button
-                                        className="btn-checkout"
-                                        onClick={() => { setIsCartOpen(false); navigate('/checkout'); }}
-                                    >
-                                        Checkout
-                                    </button>
-                                    <button
-                                        className="btn-keep-shopping"
-                                        onClick={() => setIsCartOpen(false)}
-                                    >
-                                        Keep Shopping
-                                    </button>
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                     <span className="nav-my-learning" onClick={() => navigate('/my-courses')} style={{ cursor: 'pointer' }}>
@@ -292,11 +284,20 @@ export default function Navbar() {
                         sx={{ p: 0, ml: 1 }}
                     >
                         {user ? (
-                            <Avatar sx={{ bgcolor: 'var(--primary, #7c3aed)', width: 32, height: 32, fontSize: '1rem', border: '2px solid transparent', '&:hover': { borderColor: 'var(--primary, #7c3aed)' } }}>
-                                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                            <Avatar
+                                src={user.imageUrl ? getImageUrl(user.imageUrl) : undefined}
+                                imgProps={{
+                                    style: {
+                                        objectFit: 'cover',
+                                        imageRendering: '-webkit-optimize-contrast'
+                                    }
+                                }}
+                                sx={{ bgcolor: 'var(--primary, #7c3aed)', width: 44, height: 44, fontSize: '1.25rem', border: '2px solid transparent', '&:hover': { borderColor: 'var(--primary, #7c3aed)' } }}
+                            >
+                                {!user.imageUrl && (user.name ? user.name.charAt(0).toUpperCase() : 'U')}
                             </Avatar>
                         ) : (
-                            <AccountCircleRoundedIcon style={{ color: "var(--nav-icon-color)", fontSize: '32px' }} />
+                            <AccountCircleRoundedIcon style={{ color: "var(--nav-icon-color)", fontSize: '44px' }} />
                         )}
                     </IconButton>
                     <Menu
@@ -315,12 +316,6 @@ export default function Navbar() {
                         </MenuItem>
                         <Divider />
                         <MenuItem onClick={() => { handleProfileClose(); navigate('/profile'); }}>
-                            <ListItemIcon>
-                                <PersonIcon fontSize="small" />
-                            </ListItemIcon>
-                            My Profile
-                        </MenuItem>
-                        <MenuItem onClick={() => { handleProfileClose(); navigate('/profile'); /* could pass a hash/state to select settings tab later */ }}>
                             <ListItemIcon>
                                 <SettingsIcon fontSize="small" />
                             </ListItemIcon>

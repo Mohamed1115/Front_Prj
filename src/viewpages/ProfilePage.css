@@ -98,15 +98,15 @@
 }
 .profile-avatar-circle {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: 140px;
+  height: 140px;
 }
 .avatar-edit-badge {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 24px;
-  height: 24px;
+  bottom: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
   background: var(--btn-primary-bg, #1a1a1a);
   color: var(--btn-primary-text, #fff);
   border-radius: 50%;

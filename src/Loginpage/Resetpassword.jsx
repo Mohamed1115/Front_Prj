@@ -1,13 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { resetPassword as resetPasswordApi } from '../services/Api';
 import toast from 'react-hot-toast';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import "./Logincss.css";
 
 export default function Resetpassword() {
     const [password, setPassword] = useState("");
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('zumra-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }, []);
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
@@ -54,23 +60,24 @@ export default function Resetpassword() {
    
     return (   
         <div className="login-wrapper">
-            <div className="login-card">
-                <div className="login-header">
-                    <div className="logo">
-                        <span className="logo-icon"></span>
+            <div className="login-card-container">
+                <div className="login-card-header">
+                    <Link to="/" className="logo-container">
+                        <span className="logo-icon-dot"></span>
                         <span className="logo-text">ZUMRA</span>
-                    </div>
+                    </Link>
                     <h1>Reset Password</h1>
-                    <p>Enter your new password below</p>
+                    <p>Enter your new password below to update your account security</p>
                 </div>
 
                 <form onSubmit={handleReset} className="login-form">
                     <div className="input-group">
                         <label>New Password</label>
-                        <div className="password-input-wrapper">
+                        <div className="input-with-icon">
+                            <LockOutlinedIcon className="input-icon" />
                             <input 
                                 type={showPassword ? "text" : "password"} 
-                                placeholder="••••••••"
+                                placeholder="••••••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
@@ -86,10 +93,11 @@ export default function Resetpassword() {
                     
                     <div className="input-group">
                         <label>Confirm Password</label>
-                        <div className="password-input-wrapper">
+                        <div className="input-with-icon">
+                            <LockOutlinedIcon className="input-icon" />
                             <input 
                                 type={showConfirmPassword ? "text" : "password"} 
-                                placeholder="••••••••"
+                                placeholder="••••••••••••"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                             />
@@ -105,15 +113,17 @@ export default function Resetpassword() {
 
                     <button 
                         type="submit" 
-                        className="sign-in-btn" 
+                        className="premium-action-btn" 
                         disabled={isLoading || !confirmPassword.trim() || !password.trim()}
                         style={{ marginTop: '1rem' }}
                     >
                         {isLoading ? "Resetting..." : "Reset Password"}
                     </button>
                     
-                    <div className="sign-up-prompt">
-                        Remember your password? <Link to="/">Log in</Link>
+                    <div className="auth-footer-container">
+                        <div className="auth-footer-prompt">
+                            Remember your password? <Link to="/">Login</Link>
+                        </div>
                     </div>
                 </form>
             </div>

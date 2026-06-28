@@ -20,7 +20,21 @@ import XIcon from "@mui/icons-material/X";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import toast from "react-hot-toast";
-import { getAllFacilities, getFacilitiesByUserId, createFacility, updateFacility, deleteFacility, getAllCategories, getImageUrl } from "../services/Api";
+import { 
+    getAllFacilities, 
+    getFacilitiesByUserId, 
+    createFacility, 
+    updateFacility, 
+    deleteFacility, 
+    getAllCategories, 
+    getImageUrl,
+    getUserProfile,
+    updateUserProfile,
+    changeUserEmail,
+    uploadUserAvatar,
+    updateUserAvatar,
+    deleteUserAvatar
+} from "../services/Api";
 
 // ─── Component ───────────────────────────────────────────
 export default function ProfilePage() {
@@ -65,15 +79,131 @@ export default function ProfilePage() {
 
     // Form Data - Profile
     const [profileData, setProfileData] = useState({
-        fullName: "Amr Ahmed",
-        email: "Amrmohammedd99@gmail.com",
-        facilityName: "ZUMRA",
-        phoneNumber: "01099684122",
-        bio: "Passionate developer and instructor."
+        fullName: "",
+        email: "",
+        phoneNumber: "",
+        imageUrl: null,
+        userName: ""
     });
+    const [originalEmail, setOriginalEmail] = useState("");
 
     const handleProfileChange = (e) => {
         setProfileData({ ...profileData, [e.target.name]: e.target.value });
+    };
+
+    // Load Profile from Backend
+    useEffect(() => {
+        async function fetchProfile() {
+            try {
+                const data = await getUserProfile();
+                if (data) {
+                    setProfileData({
+                        fullName: data.name || data.Name || "",
+                        email: data.email || data.Email || "",
+                        phoneNumber: data.phone || data.Phone || data.phoneNumber || data.PhoneNumber || "",
+                        imageUrl: data.imageUrl || data.ImageUrl || null,
+                        userName: data.userName || data.UserName || ""
+                    });
+                    setOriginalEmail(data.email || data.Email || "");
+                }
+            } catch (error) {
+                console.error("Failed to load user profile:", error);
+            }
+        }
+        if (activeTab === 'profile') {
+            fetchProfile();
+        }
+    }, [activeTab]);
+
+    // Handle Profile Save
+    const handleProfileSubmit = async (e) => {
+        if (e) e.preventDefault();
+        try {
+            toast.loading("Saving changes...", { id: "profile-save" });
+            
+            // Call update profile endpoint
+            await updateUserProfile({
+                name: profileData.fullName,
+                phoneNumber: profileData.phoneNumber,
+                userName: profileData.userName || profileData.fullName
+            });
+
+            // Handle email change if it was modified
+            if (profileData.email && profileData.email.trim().toLowerCase() !== originalEmail.trim().toLowerCase()) {
+                await changeUserEmail(profileData.email.trim());
+                toast.success("Profile updated. A confirmation email has been sent to confirm your new email address.", { id: "profile-save" });
+            } else {
+                toast.success("Profile updated successfully!", { id: "profile-save" });
+            }
+
+            // Re-fetch profile
+            const data = await getUserProfile();
+            if (data) {
+                setProfileData({
+                    fullName: data.name || data.Name || "",
+                    email: data.email || data.Email || "",
+                    phoneNumber: data.phone || data.Phone || data.phoneNumber || data.PhoneNumber || "",
+                    imageUrl: data.imageUrl || data.ImageUrl || null,
+                    userName: data.userName || data.UserName || ""
+                });
+                setOriginalEmail(data.email || data.Email || "");
+            }
+        } catch (error) {
+            toast.error(error.message || "Failed to update profile", { id: "profile-save" });
+        }
+    };
+
+    // Avatar Upload Handlers
+    const handleAvatarClick = () => {
+        document.getElementById("avatar-input")?.click();
+    };
+
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            toast.loading("Uploading avatar...", { id: "avatar-upload" });
+            let response;
+            if (profileData.imageUrl) {
+                response = await updateUserAvatar(formData);
+            } else {
+                response = await uploadUserAvatar(formData);
+            }
+            
+            setProfileData(prev => ({
+                ...prev,
+                imageUrl: response.imageUrl || response.ImageUrl || response.data?.imageUrl
+            }));
+            
+            toast.success("Avatar updated successfully!", { id: "avatar-upload" });
+            
+            // Re-fetch profile to ensure synchronization
+            const updated = await getUserProfile();
+            if (updated) {
+                setProfileData(prev => ({
+                    ...prev,
+                    imageUrl: updated.imageUrl || updated.ImageUrl || null
+                }));
+            }
+        } catch (error) {
+            toast.error(error.message || "Failed to upload avatar", { id: "avatar-upload" });
+        }
+    };
+
+    const handleAvatarDelete = async () => {
+        if (!window.confirm("Are you sure you want to delete your avatar?")) return;
+        try {
+            toast.loading("Deleting avatar...", { id: "avatar-delete" });
+            await deleteUserAvatar();
+            setProfileData(prev => ({ ...prev, imageUrl: null }));
+            toast.success("Avatar deleted successfully!", { id: "avatar-delete" });
+        } catch (error) {
+            toast.error(error.message || "Failed to delete avatar", { id: "avatar-delete" });
+        }
     };
 
     // --- Facilities State ---
@@ -190,8 +320,6 @@ export default function ProfilePage() {
                 <span className="bc-active">
                     {activeTab === 'profile' && 'User Profile'}
                     {activeTab === 'facility' && 'Facility'}
-                    {activeTab === 'my-courses' && 'My Learning'}
-                    {activeTab === 'live-meeting' && 'Live Meeting'}
                     {activeTab === 'settings' && 'Setting'}
                 </span>
             </div>
@@ -214,18 +342,6 @@ export default function ProfilePage() {
                             <HomeWorkIcon /> Facility
                         </button>
                         <button 
-                            className={`sidebar-nav-item ${activeTab === 'my-courses' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('my-courses')}
-                        >
-                            <MenuBookIcon /> My Learning
-                        </button>
-                        <button 
-                            className={`sidebar-nav-item ${activeTab === 'live-meeting' ? 'active' : ''}`}
-                            onClick={() => navigate('/live-meeting-test')}
-                        >
-                            <VideocamIcon /> Live Meeting
-                        </button>
-                        <button 
                             className={`sidebar-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
                             onClick={() => setActiveTab('settings')}
                         >
@@ -244,49 +360,98 @@ export default function ProfilePage() {
                         {activeTab === 'profile' && (
                             <div className="tab-pane-profile">
                                 <div className="profile-avatar-row">
-                                    <div className="profile-avatar-circle">
-                                        <AccountCircleIcon style={{fontSize: 80, color: "#9ca3af"}} />
-                                        <div className="avatar-edit-badge"><EditIcon fontSize="small"/></div>
+                                    <div 
+                                        className="profile-avatar-circle" 
+                                        onClick={handleAvatarClick} 
+                                        style={{ cursor: "pointer", position: "relative", width: 140, height: 140, borderRadius: "50%", display: "flex", justifyContent: "center", alignItems: "center", overflow: "hidden", background: "var(--bg-secondary, #374151)" }}
+                                    >
+                                        {profileData.imageUrl ? (
+                                            <img 
+                                                src={getImageUrl(profileData.imageUrl)} 
+                                                alt="Avatar" 
+                                                style={{ width: "100%", height: "100%", objectFit: "cover", imageRendering: "-webkit-optimize-contrast" }} 
+                                            />
+                                        ) : (
+                                            <AccountCircleIcon style={{fontSize: 140, color: "#9ca3af"}} />
+                                        )}
+                                        <div className="avatar-edit-badge" style={{ position: "absolute", bottom: 6, right: 6 }}><EditIcon fontSize="medium"/></div>
+                                        <input 
+                                            type="file" 
+                                            id="avatar-input" 
+                                            accept="image/*" 
+                                            style={{ display: "none" }} 
+                                            onChange={handleAvatarChange} 
+                                        />
                                     </div>
                                     <div className="profile-avatar-text">
                                         <h3>Your Avatar</h3>
                                         <p>PNG or JPG no larger than 800px wide and tall.</p>
+                                        {profileData.imageUrl && (
+                                            <button 
+                                                onClick={handleAvatarDelete}
+                                                style={{ 
+                                                    background: "none", 
+                                                    border: "none", 
+                                                    color: "#ef4444", 
+                                                    cursor: "pointer", 
+                                                    fontSize: "0.85rem", 
+                                                    padding: "5px 0",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: "3px"
+                                                }}
+                                            >
+                                                <DeleteIcon fontSize="inherit" /> Delete Avatar
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
-                                <div className="profile-form">
+                                <form className="profile-form" onSubmit={handleProfileSubmit}>
                                     <div className="form-row-2">
                                         <div className="form-group">
                                             <label>Full Name</label>
-                                            <input type="text" name="fullName" value={profileData.fullName} onChange={handleProfileChange} />
+                                            <input type="text" name="fullName" value={profileData.fullName} onChange={handleProfileChange} required />
                                         </div>
                                         <div className="form-group">
                                             <label>Email Address</label>
-                                            <input type="email" name="email" value={profileData.email} onChange={handleProfileChange} />
+                                            <input type="email" name="email" value={profileData.email} onChange={handleProfileChange} required />
                                         </div>
                                     </div>
 
                                     <div className="form-row-2">
-                                        <div className="form-group">
-                                            <label>Facility Name (Optional)</label>
-                                            <input type="text" name="facilityName" value={profileData.facilityName} onChange={handleProfileChange} />
-                                        </div>
                                         <div className="form-group">
                                             <label>Phone Number</label>
                                             <input type="tel" name="phoneNumber" value={profileData.phoneNumber} onChange={handleProfileChange} />
                                         </div>
                                     </div>
 
-                                    <div className="form-group">
-                                        <label>Bio</label>
-                                        <textarea rows="4" name="bio" value={profileData.bio} onChange={handleProfileChange} />
-                                    </div>
-
                                     <div className="form-actions-row">
-                                        <button className="btn-secondary">Cancel</button>
-                                        <button className="btn-primary">Save Changes</button>
+                                        <button 
+                                            type="button" 
+                                            className="btn-secondary" 
+                                            onClick={async () => {
+                                                try {
+                                                    const data = await getUserProfile();
+                                                    if (data) {
+                                                        setProfileData({
+                                                            fullName: data.name || data.Name || "",
+                                                            email: data.email || data.Email || "",
+                                                            phoneNumber: data.phone || data.Phone || data.phoneNumber || data.PhoneNumber || "",
+                                                            imageUrl: data.imageUrl || data.ImageUrl || null,
+                                                            userName: data.userName || data.UserName || ""
+                                                        });
+                                                    }
+                                                } catch (err) {
+                                                    toast.error("Failed to discard changes");
+                                                }
+                                            }}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button type="submit" className="btn-primary">Save Changes</button>
                                     </div>
-                                </div>
+                                </form>
                             </div>
                         )}
 
@@ -594,7 +759,6 @@ export default function ProfilePage() {
                     <a href="#"><InstagramIcon /></a>
                     <a href="#"><XIcon /></a>
                 </div>
-                <p className="footer-copyright">©Copyrights 2026</p>
             </footer>
         </div>
     );

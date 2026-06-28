@@ -1,0 +1,40 @@
+@import "./AllCoursesPage.css";
+
+/* Custom additions for search page elements */
+.result-type-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 6px;
+  margin-left: 10px;
+  vertical-align: middle;
+  display: inline-block;
+  letter-spacing: 0.03em;
+}
+
+.course-badge {
+  background-color: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
+}
+
+.facility-badge {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.group-badge {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.facility-image-wrapper, .group-image-wrapper {
+  background: #e2e8f0 !important;
+}
+
+.course-facility-meta {
+  display: inline-flex;
+  align-items: center;
+  color: #4b5563;
+  font-weight: 500;
+}

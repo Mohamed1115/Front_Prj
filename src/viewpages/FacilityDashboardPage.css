@@ -288,3 +288,20 @@
         width: 100%;
     }
 }
+
+.fd-table tbody tr.fd-table-row-clickable {
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.fd-table tbody tr.fd-table-row-clickable:hover {
+    background-color: #f8fafc;
+}
+
+.fd-table tbody tr.fd-table-row-clickable:active {
+    background-color: #f1f5f9;
+}
+
+.fd-table-row-clickable:hover .view-submissions-btn {
+    background-color: rgba(79, 70, 229, 0.16) !important;
+    transform: translateX(3px);
+}
